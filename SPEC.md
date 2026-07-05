@@ -631,13 +631,13 @@ special case is exactly the kind of parser wart this specification refuses to
 copy.
 
 > **Implementation status.** This subsection is the one deliberate
-> forward-looking addition in this specification: the reference
-> implementation does not yet read `rac_spec`, and the reference corpus does
-> not yet declare it. Per this repository's own extraction rules, the
-> requirement MUST NOT be ratified as a MUST while the reference
-> implementation violates it: either `rac-core` implements it before v0.1.0
-> is announced, or this clause is demoted to SHOULD for v0.1.0. See
-> `DISCREPANCIES.md` (D5).
+> forward-looking addition in this specification. At ratification the
+> maintainer committed `rac-core` to implementing it — reading `rac_spec`,
+> refusing newer-versioned corpora per §10.3, and declaring the key in its
+> own corpus — before v0.1.0 is announced; the MUST stands on that basis.
+> Until that lands, the reference implementation ignores the key (which is
+> harmless: unknown corpus-config keys are not errors), and this note is the
+> record of the gap.
 
 ### 10.2 What may change when
 
@@ -674,17 +674,18 @@ value MUST include the corpus's declared spec version, so the failure reads
 Producers extend RAC via **new keys and sections, never new values in the
 closed enums**:
 
-- **Producer-defined frontmatter keys** are permitted in principle and MUST
-  be preserved by any consumer that round-trips an artifact (matching OKF's
-  key-preservation direction, so the OKF export stays lossless). Note that
-  the *reference* validator currently rejects unknown keys
-  (`invalid-metadata-field`); a producer targeting gated corpora should
-  confine extensions to `tags` until a namespacing scheme for extension keys
-  is specified (tracked in `DISCREPANCIES.md`, D7).
+- **`tags`** carries arbitrary descriptive labels — this is the extension
+  surface inside the frontmatter envelope. The envelope's field set is
+  otherwise closed (§6.3): a producer MUST NOT add its own frontmatter keys
+  (`invalid-metadata-field`). A namespaced extension-key scheme MAY be
+  specified in a future minor version; until then, structured extension data
+  belongs in body sections.
 - **Non-vocabulary body sections** are free: any `##` section outside a
   type's required/recommended/optional set is carried, searchable content
   with no validation semantics.
-- **`tags`** carries arbitrary descriptive labels.
+- Consumers MUST preserve extension content they round-trip — `tags`, the
+  reserved `relationships` map, and free body sections — so the OKF export
+  stays lossless.
 - What extension MUST NOT do: add a `status` or `category` value, a
   relationship section name, or an artifact type. Those are enum changes and
   follow §10.2.

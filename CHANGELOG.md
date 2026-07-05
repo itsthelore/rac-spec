@@ -25,7 +25,8 @@ Initial extraction of the specification from the reference implementation,
   type, and one annotated invalid case per major rule, indexed by
   `manifest.json` as an executable acceptance suite.
 
-One deliberate forward-looking addition beyond current validator behavior:
-the corpus-level spec-version declaration (`rac_spec` in `.rac/config.yaml`,
-SPEC.md §10.1), flagged in `DISCREPANCIES.md` pending reference-implementation
-support.
+One deliberate forward-looking addition beyond extraction-time validator
+behavior: the corpus-level spec-version declaration (`rac_spec` in
+`.rac/config.yaml`, SPEC.md §10.1). The reference implementation is committed
+to reading it — and refusing newer-versioned corpora per §10.3 — before the
+v0.1.0 announcement; SPEC.md §10.1 carries the status note.
