@@ -50,8 +50,8 @@ regardless of severity; a corpus policy may reclassify a specific code
 A populated **vocabulary** section on a type that does not declare it is
 `relationship-edge-unsupported`. A `##` section whose name is **outside** the
 vocabulary entirely (e.g. `## Related Widgets`) is ordinary body content: no
-edge, and — in the current reference implementation — no finding (see
-`DISCREPANCIES.md` D2). Extension is via new frontmatter keys or free body
-sections, never via new relationship section names (SPEC.md §11); adding an
+edge and no finding — it is indistinguishable from prose. Extension is via
+`tags` or free body sections, never via new relationship section names
+(SPEC.md §11); adding an
 edge to this vocabulary is a **minor** spec version, removing or re-defining
 one a **major** version.

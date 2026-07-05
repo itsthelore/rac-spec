@@ -52,7 +52,7 @@
     "aliases": "An artifact answers to ALL of the above as resolution aliases (migration support); duplicate-identity detection uses ONLY the canonical identifier",
     "conflict": "frontmatter id vs differing declared legacy identity = conflicting-identity (error); never silently resolved",
     "uniqueness_scope": "Canonical identifier must be unique corpus-wide: duplicate-artifact-identifier (error, relationships source)",
-    "path_independence": "Identity is the explicit id, never the file path. Moving or renaming a file does not change a frontmatter-declared identity; inbound references keep resolving. NOTE: the extraction brief attributed this to the 2026.06.5 'rename' release; in fact 2026.06.5 renamed the PyPI package, and path-independent identity dates from ADR-026/v0.7.11 (opaque frontmatter IDs) — see DISCREPANCIES.md D9.",
+    "path_independence": "Identity is the explicit id, never the file path. Moving or renaming a file does not change a frontmatter-declared identity; inbound references keep resolving. NOTE: the extraction brief attributed this to the 2026.06.5 'rename' release; in fact 2026.06.5 renamed the PyPI package, and path-independent identity dates from ADR-026/v0.7.11 (opaque frontmatter IDs). Resolved at ratification: cite ADR-026, not the release.",
     "rename_refactor": "rac rename computes a corpus-wide, deterministic, reversible edit plan for an id rename; token-specific, refuses filename-only identities (services/rename.py)",
     "requirement_line_ids": "Inline [REQ-NNN] requirement-line IDs are NOT artifact identifiers; relationship targets are whole artifact files (core/identity.py)",
     "source": "core/metadata.py ID_RE, core/idgen.py, core/identity.py, services/init.py KEY_RE, services/relationships.py"
@@ -132,7 +132,7 @@
       "applies_to":           {"range": [], "external": true, "filesystem_scoped": true, "directional": true, "symmetric": false, "inverse": "governed_by", "domain": ["decision"], "note": "targets are repo paths/globs/component labels a decision governs; LITERAL path entries (containing '/', no glob chars) are existence-checked against the repo root (applies-to-target-not-found, error); globs and component labels are recorded without checking"}
     },
     "domain_enforcement": "Edge legality by source type = the section appears in the type's spec.optional. A recognized vocabulary section populated on a type that does not declare it = relationship-edge-unsupported (warning severity, blocking by default in gate); it produces no edge",
-    "unrecognized_sections": "A ## heading OUTSIDE the vocabulary (e.g. '## Related Widgets') is an ordinary body section: no edge, NO finding. Frontmatter relationships: kinds are shape-validated but not vocabulary-checked (reserved). See DISCREPANCIES.md D2/D3.",
+    "unrecognized_sections": "A ## heading OUTSIDE the vocabulary (e.g. '## Related Widgets') is an ordinary body section: no edge, NO finding. Frontmatter relationships: kinds are shape-validated but not vocabulary-checked (reserved). Accepted as-is at ratification; the spec follows the code, and unknown kinds must become blocking when the field is activated.",
     "cardinality": "many (declared in registry, not enforced)",
     "referential_integrity": "Every non-external reference is resolved against the corpus alias index: relationship-target-not-found (error) / relationship-target-ambiguous (error) / relationship-self-reference (warning); resolved targets are range-checked (relationship-target-type-mismatch, error; untyped targets exempt) and status-checked (relationship-target-superseded, warning). supersedes graphs must be acyclic (relationship-cycle, error, per strongly-connected component).",
     "all_relationship_findings_fail_validate": "rac relationships --validate exits 1 on ANY finding regardless of intrinsic severity; rac gate defaults every relationship finding to blocking",
@@ -159,7 +159,7 @@
       "6": {"name": "suspect drift", "code": "suspect-artifact", "severity": "warning", "fails_review": false, "note": "git-derived: referenced target changed after the referrer"}
     },
     "review_fail_rule": "ReviewReport.ok is false iff any finding has priority <= 2 (PRIORITY_BROKEN_RELATIONSHIP). Priorities 3-6 are advisory and never fail.",
-    "note_on_four_tiers": "The extraction brief described 'four severity tiers'. The code defines SIX review priority levels; 5 and 6 are later advisory-only additions (v0.13.3, drift phase 1). Priorities 1-2 fail, 3-6 advisory — the '1-2 fail CI' claim holds. See DISCREPANCIES.md D1.",
+    "note_on_four_tiers": "The extraction brief described 'four severity tiers'. The code defines SIX review priority levels; 5 and 6 are later advisory-only additions (v0.13.3, drift phase 1). Priorities 1-2 fail, 3-6 advisory — the '1-2 fail CI' claim holds. Accepted as-is at ratification: the spec specifies all six.",
     "gate_default_enforcement": {
       "validate error": "blocking",
       "validate warning": "advisory",
@@ -249,7 +249,7 @@
   "spec_version_declaration": {
     "per_artifact": "frontmatter schema_version (integer, required when frontmatter present, supported = {1}, unsupported-schema-version error on anything else) — a per-ARTIFACT envelope version",
     "corpus_level": "NONE. The corpus root config .rac/config.yaml exists (keys read today: repository_key, ticketing.provider, validation.rules/types, enforcement.blocking/advisory/off, audit) but the engine reads no corpus-level spec-version key.",
-    "spec_addition": "SPEC.md section 10 specifies `rac_spec: \"0.1\"` in .rac/config.yaml — the one authorized forward-looking addition. rac-core does not read it yet: see DISCREPANCIES.md D5 and the final report.",
+    "spec_addition": "SPEC.md section 10 specifies `rac_spec: \"0.1\"` in .rac/config.yaml — the one authorized forward-looking addition. rac-core does not read it yet; at ratification the maintainer committed rac-core to implementing it (read the key, refuse newer versions, declare it in the dogfood corpus) before the v0.1.0 announcement, so the MUST stands (SPEC.md section 10.1 status note).",
     "source": "services/init.py, core/frontmatter.py"
   },
 
@@ -264,7 +264,7 @@
     "claim": "A RAC corpus is expressible as a conformant OKF v0.1 bundle (ADR-048: every RAC repository MUST be a conformant OKF v0.1 bundle); rac export --okf emits the derived bundle: one file per typed artifact with projected frontmatter (type mapped per OKF_TYPE, id, git-derived created/updated, tags), resolved relationships rendered as # Citations body links, generated index.md + log.md",
     "type_map": {"requirement": "Requirement", "decision": "ADR", "design": "Design", "roadmap": "Roadmap", "prompt": "Prompt"},
     "direction": "one-way: RAC -> OKF always; OKF -> validated RAC is not generally possible (untyped links, open type set, no lifecycle)",
-    "okf_spec_verified": "GoogleCloudPlatform/knowledge-catalog okf/SPEC.md fetched 2026-07-05: section 5.3 — 'The specific kind of relationship ... is conveyed by the surrounding prose, not by the link itself'; consumers 'MUST tolerate broken links'. Section 9 — consumers MUST NOT reject over missing optional fields, unknown type values, unknown keys, broken cross-links, missing index.md; consumers SHOULD preserve unknown keys (SHOULD, not MUST — see DISCREPANCIES.md D6). Section 11 — okf_version MAY be declared in bundle-root index.md frontmatter; consumers that do not understand it SHOULD attempt best-effort consumption. Required frontmatter: type only.",
+    "okf_spec_verified": "GoogleCloudPlatform/knowledge-catalog okf/SPEC.md fetched 2026-07-05: section 5.3 — 'The specific kind of relationship ... is conveyed by the surrounding prose, not by the link itself'; consumers 'MUST tolerate broken links'. Section 9 — consumers MUST NOT reject over missing optional fields, unknown type values, unknown keys, broken cross-links, missing index.md; consumers SHOULD preserve unknown keys (SHOULD, not MUST — SPEC.md section 5 deliberately says 'directed to preserve', not MUST). Section 11 — okf_version MAY be declared in bundle-root index.md frontmatter; consumers that do not understand it SHOULD attempt best-effort consumption. Required frontmatter: type only.",
     "source": "core/okf.py, output/okf.py, services/okf_conformance.py, docs/okf-profile.md, ADR-048"
   },
 
