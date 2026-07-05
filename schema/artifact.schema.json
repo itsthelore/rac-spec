@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/itsthelore/rac-spec/main/schema/artifact.schema.json",
+  "title": "RAC (Requirements as Code) parsed artifact — per-type structural contract",
+  "description": "The canonical parsed representation of one RAC artifact, as a discriminated union over `type`. RAC's source form is Markdown, not JSON, so this schema validates the *parsed* artifact a conformant parser produces: the frontmatter envelope, the single H1 title, the map of normalized `##` section names to body text, and (for requirement artifacts) the parsed requirement lines. It mirrors the reference validator exactly (rac-core core/artifacts.py ARTIFACT_SPECS + core/validation.py): required sections per type, the closed status/category/horizon enums (first non-empty line of the section body, matched case-insensitively), and the [REQ-N] line grammar. Recommended and optional sections are never required here — their absence is advisory (SPEC.md section 9.2, tier 4). Sections outside a type's vocabulary are permitted free content (SPEC.md section 11).",
+  "type": "object",
+  "properties": {
+    "frontmatter": {
+      "description": "The parsed frontmatter envelope, when the source document had one.",
+      "$ref": "frontmatter.schema.json"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["requirement", "decision", "roadmap", "prompt", "design"]
+    },
+    "title": {
+      "description": "The single top-level `#` title. Exactly one is required in the source (missing-title / multiple-titles are blocking).",
+      "type": "string",
+      "minLength": 1
+    },
+    "sections": {
+      "description": "Every `##` section: normalized (trimmed, casefolded) heading -> body text, in document order.",
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "requirements": {
+      "description": "Requirement artifacts only: the parsed `[REQ-N] description` lines from `## Requirements`. Any non-empty line in that section that does not parse to this shape is a blocking finding (req-missing-id / malformed-req-id / empty-req-text); a duplicated id is duplicate-req-id. Id uniqueness is per file.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^REQ-[0-9]+$" },
+          "text": { "type": "string", "minLength": 1 }
+        },
+        "required": ["id", "text"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["type", "title", "sections"],
+  "$defs": {
+    "statusRPD": {
+      "description": "First non-empty line of `## Status` for requirement/decision/design: Proposed | Accepted | Superseded | Deprecated (case-insensitive). An unknown value is the blocking finding invalid-<type>-status.",
+      "type": "string",
+      "pattern": "^\\s*([Pp][Rr][Oo][Pp][Oo][Ss][Ee][Dd]|[Aa][Cc][Cc][Ee][Pp][Tt][Ee][Dd]|[Ss][Uu][Pp][Ee][Rr][Ss][Ee][Dd][Ee][Dd]|[Dd][Ee][Pp][Rr][Ee][Cc][Aa][Tt][Ee][Dd])\\s*(\\n[\\s\\S]*)?$"
+    },
+    "statusRoadmap": {
+      "description": "Roadmap status: Planned | Achieved | Superseded | Abandoned (case-insensitive).",
+      "type": "string",
+      "pattern": "^\\s*([Pp][Ll][Aa][Nn][Nn][Ee][Dd]|[Aa][Cc][Hh][Ii][Ee][Vv][Ee][Dd]|[Ss][Uu][Pp][Ee][Rr][Ss][Ee][Dd][Ee][Dd]|[Aa][Bb][Aa][Nn][Dd][Oo][Nn][Ee][Dd])\\s*(\\n[\\s\\S]*)?$"
+    },
+    "statusPrompt": {
+      "description": "Prompt status: Active | Deprecated (case-insensitive).",
+      "type": "string",
+      "pattern": "^\\s*([Aa][Cc][Tt][Ii][Vv][Ee]|[Dd][Ee][Pp][Rr][Ee][Cc][Aa][Tt][Ee][Dd])\\s*(\\n[\\s\\S]*)?$"
+    },
+    "categoryDecision": {
+      "description": "Decision category: Architecture | Product | Process | Technical | Other (case-insensitive). Unknown value: invalid-decision-category.",
+      "type": "string",
+      "pattern": "^\\s*([Aa][Rr][Cc][Hh][Ii][Tt][Ee][Cc][Tt][Uu][Rr][Ee]|[Pp][Rr][Oo][Dd][Uu][Cc][Tt]|[Pp][Rr][Oo][Cc][Ee][Ss][Ss]|[Tt][Ee][Cc][Hh][Nn][Ii][Cc][Aa][Ll]|[Oo][Tt][Hh][Ee][Rr])\\s*(\\n[\\s\\S]*)?$"
+    },
+    "horizonRoadmap": {
+      "description": "Roadmap horizon: now | next | later (case-insensitive) or a calendar quarter `Q[1-4] <whitespace> YYYY` (case-sensitive Q, per the reference validator). Unknown value: invalid-roadmap-horizon.",
+      "type": "string",
+      "pattern": "^\\s*([Nn][Oo][Ww]|[Nn][Ee][Xx][Tt]|[Ll][Aa][Tt][Ee][Rr]|Q[1-4][ \\t]+[0-9]{4})\\s*(\\n[\\s\\S]*)?$"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "requirement" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": ["problem", "requirements"],
+            "properties": { "status": { "$ref": "#/$defs/statusRPD" } }
+          }
+        },
+        "required": ["requirements"]
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "decision" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": ["context", "decision", "consequences"],
+            "properties": {
+              "status": { "$ref": "#/$defs/statusRPD" },
+              "category": { "$ref": "#/$defs/categoryDecision" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "roadmap" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": ["outcomes", "initiatives"],
+            "properties": {
+              "status": { "$ref": "#/$defs/statusRoadmap" },
+              "horizon": { "$ref": "#/$defs/horizonRoadmap" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "prompt" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": ["objective", "input", "instructions", "output"],
+            "properties": { "status": { "$ref": "#/$defs/statusPrompt" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "type": { "const": "design" } }, "required": ["type"] },
+      "then": {
+        "properties": {
+          "sections": {
+            "required": ["context", "user need", "design", "constraints"],
+            "properties": { "status": { "$ref": "#/$defs/statusRPD" } }
+          }
+        }
+      }
+    }
+  ]
+}

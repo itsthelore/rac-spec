@@ -1,0 +1,287 @@
+{
+  "_meta": {
+    "purpose": "Extraction inventory for the RAC (Requirements as Code) specification. Every normative claim in SPEC.md cites a key in this file via an HTML comment (<!-- inv: <key> -->). This is a working artifact of the spec extraction; it is not itself normative.",
+    "extracted_from": "itsthelore/rac-core @ 6f8de33 (branch main state at extraction)",
+    "source_of_truth": "src/rac/ validator code: core/validation.py, core/classification.py, core/artifacts.py, core/frontmatter.py, core/metadata.py, core/identity.py, core/idgen.py, core/relationship_types.py, core/markdown.py, core/corpus.py, core/fs.py, core/okf.py, core/overrides.py, core/limits.py, services/validate.py, services/relationships.py, services/review.py, services/gate.py, services/okf_conformance.py, services/init.py, output/sarif.py, cli.py",
+    "verified_by_running": "rac validate rac/, rac relationships rac/ --validate, rac gate rac/ against the rac-core dogfood corpus (389 artifacts, all pass)"
+  },
+
+  "artifact_types": {
+    "closed_set": ["requirement", "decision", "roadmap", "prompt", "design"],
+    "source": "core/artifacts.py ARTIFACT_SPECS; frontmatter `type` is validated against this registry (core/frontmatter.py spec_for check)",
+    "unknown_is_valid": "A document matching no type classifies as 'unknown'. Unknown is a valid, successful outcome, not an error (core/classification.py). Directory validation reports unknown files as skipped, never failed (services/validate.py STATUS_SKIPPED)."
+  },
+
+  "classification": {
+    "mechanism": "Pure section-presence scoring: points = |matched required| + 0.5 * |matched recommended|; fit = points / ceiling. Best fit wins; ties broken by more required matches then registry order.",
+    "confidence_threshold": 0.5,
+    "unknown_condition": "fit < 0.5 OR zero required sections matched",
+    "synonyms": "Per-type heading synonyms applied before matching (e.g. 'success criteria' -> 'success metrics'); classification aid only — validation expects canonical headings",
+    "separation": "Classification is separate from validation: an invalid but recognizable artifact still classifies as its type, then fails validation",
+    "source": "core/classification.py"
+  },
+
+  "file_format": {
+    "carrier": "One artifact per UTF-8 Markdown (.md) file, optional leading YAML frontmatter block delimited by --- (closer may be --- or ...), body parsed as CommonMark",
+    "title": "Exactly one top-level # heading (missing-title / multiple-titles are errors)",
+    "sections": "## headings, matched case-insensitively and whitespace-trimmed; section bodies are the unit of structural validation",
+    "discovery": "Corpus walk = sorted *.md files under the corpus root, recursive, skipping any path component starting with '.' (core/fs.py find_markdown_files)",
+    "source": "core/markdown.py, core/frontmatter.py, core/fs.py"
+  },
+
+  "frontmatter": {
+    "supported_fields": ["schema_version", "id", "type", "relationships", "tags"],
+    "unknown_field": "invalid-metadata-field (error) — never ignored",
+    "required": "schema_version (integer) is required WHEN a frontmatter block is present; a document with no frontmatter at all is legal (legacy form)",
+    "schema_version_supported": [1],
+    "unsupported_schema_version": "unsupported-schema-version (error)",
+    "id": "optional string; must match ID grammar (invalid-id-syntax error otherwise); normalized to uppercase",
+    "type": "optional string; must be a registered artifact type (invalid-metadata-field error otherwise)",
+    "relationships": "optional mapping of relationship kind -> list of artifact-ID strings; shape-validated only; RESERVED — parsed but not consumed by relationship analysis (core/metadata.py docstring); kinds are NOT checked against the relationship registry",
+    "tags": "optional list of non-empty strings (OKF-reserved descriptive field, ADR-050)",
+    "timestamps": "Deliberately absent: recency is git-derived, never stored in frontmatter (ADR-045)",
+    "strictness": "Malformed YAML, duplicate keys (duplicate-frontmatter-key), aliases (forbidden), nesting > 32 levels, and blocks > 64 KiB are all errors (malformed-frontmatter); unterminated opening --- is malformed-frontmatter",
+    "source": "core/frontmatter.py, core/metadata.py, core/limits.py"
+  },
+
+  "id_rules": {
+    "grammar": "^[A-Z][A-Z0-9]{1,9}-[0-9A-HJKMNP-TV-Z]{12}$ — <REPOSITORY_KEY>-<12-char Crockford base32 suffix (no I/L/O/U)>; matched case-insensitively, normalized uppercase",
+    "repository_key": "^[A-Z][A-Z0-9]{1,9}$ — declared once in .rac/config.yaml repository_key (rac init); changing an established key is an error, never a silent rewrite",
+    "suffix": "8 chars millisecond timestamp (time-sortable, ULID-style) + 4 chars CSPRNG; generation is branch-safe and offline",
+    "identity_precedence": ["frontmatter id (canonical; wins)", "## ID section value", "spec.id_field declared section (no type sets it today)", "<letters>-<digits> filename-stem prefix (e.g. adr-004)", "whole filename stem"],
+    "aliases": "An artifact answers to ALL of the above as resolution aliases (migration support); duplicate-identity detection uses ONLY the canonical identifier",
+    "conflict": "frontmatter id vs differing declared legacy identity = conflicting-identity (error); never silently resolved",
+    "uniqueness_scope": "Canonical identifier must be unique corpus-wide: duplicate-artifact-identifier (error, relationships source)",
+    "path_independence": "Identity is the explicit id, never the file path. Moving or renaming a file does not change a frontmatter-declared identity; inbound references keep resolving. NOTE: the extraction brief attributed this to the 2026.06.5 'rename' release; in fact 2026.06.5 renamed the PyPI package, and path-independent identity dates from ADR-026/v0.7.11 (opaque frontmatter IDs) — see DISCREPANCIES.md D9.",
+    "rename_refactor": "rac rename computes a corpus-wide, deterministic, reversible edit plan for an id rename; token-specific, refuses filename-only identities (services/rename.py)",
+    "requirement_line_ids": "Inline [REQ-NNN] requirement-line IDs are NOT artifact identifiers; relationship targets are whole artifact files (core/identity.py)",
+    "source": "core/metadata.py ID_RE, core/idgen.py, core/identity.py, services/init.py KEY_RE, services/relationships.py"
+  },
+
+  "sections_per_type": {
+    "requirement": {
+      "required": ["problem", "requirements"],
+      "recommended": ["success metrics", "risks", "assumptions"],
+      "optional": ["related decisions", "related roadmaps", "related prompts", "related designs", "related requirements", "related tickets", "verified by"],
+      "synonyms": {"success criteria": "success metrics", "kpis": "success metrics", "kpi": "success metrics"},
+      "missing_required_codes": ["missing-problem", "missing-requirements"]
+    },
+    "decision": {
+      "required": ["context", "decision", "consequences"],
+      "recommended": ["status", "category", "alternatives considered"],
+      "optional": ["supersedes", "related requirements", "related roadmaps", "related designs", "related decisions", "related tickets", "applies to"],
+      "synonyms": {"alternatives": "alternatives considered", "options considered": "alternatives considered"},
+      "missing_required_codes": ["missing-context", "missing-decision", "missing-consequences"]
+    },
+    "roadmap": {
+      "required": ["outcomes", "initiatives"],
+      "recommended": ["success measures", "assumptions", "risks"],
+      "optional": ["related decisions", "related requirements", "related prompts", "related designs", "related roadmaps", "related tickets"],
+      "synonyms": {"success metrics": "success measures"},
+      "missing_required_codes": ["missing-outcomes", "missing-initiatives"]
+    },
+    "prompt": {
+      "required": ["objective", "input", "instructions", "output"],
+      "recommended": ["constraints", "examples", "evaluation"],
+      "optional": ["related requirements", "related decisions", "related roadmaps", "related designs", "related tickets"],
+      "synonyms": {"expected output": "output", "output specification": "output", "input specification": "input"},
+      "missing_required_codes": ["missing-objective", "missing-input", "missing-instructions", "missing-output"]
+    },
+    "design": {
+      "required": ["context", "user need", "design", "constraints"],
+      "recommended": ["rationale", "alternatives", "accessibility", "style guidance", "open questions"],
+      "optional": ["related requirements", "related decisions", "related roadmaps", "related prompts", "related tickets"],
+      "synonyms": {},
+      "missing_required_codes": ["missing-context", "missing-user-need", "missing-design", "missing-constraints"]
+    },
+    "notes": "Required sections must be present (error when missing); recommended sections never fail (review priority-4 advisory when absent); optional sections are recognized/extracted but never scored, never reported missing. Missing-required code pattern: missing-<section-with-hyphens>.",
+    "source": "core/artifacts.py ARTIFACT_SPECS, core/validation.py _validate_required_sections"
+  },
+
+  "status_enums": {
+    "location": "## Status body section (first non-empty line), NOT frontmatter; matched case-insensitively; a missing Status section is always legal (metadata is optional, validated-if-present)",
+    "per_type": {
+      "requirement": {"allowed": ["Proposed", "Accepted", "Superseded", "Deprecated"], "retired": ["Superseded", "Deprecated"]},
+      "decision":    {"allowed": ["Proposed", "Accepted", "Superseded", "Deprecated"], "retired": ["Superseded", "Deprecated"]},
+      "design":      {"allowed": ["Proposed", "Accepted", "Superseded", "Deprecated"], "retired": ["Superseded", "Deprecated"]},
+      "roadmap":     {"allowed": ["Planned", "Achieved", "Superseded", "Abandoned"], "retired": ["Superseded", "Abandoned"], "note": "Achieved is a live TERMINAL state (ADR-061): realized intent, still valid to reference, not retired"},
+      "prompt":      {"allowed": ["Active", "Deprecated"], "retired": ["Deprecated"]}
+    },
+    "unknown_value": "invalid-<type>-status (error, blocking by default) — e.g. invalid-decision-status",
+    "other_constrained_metadata": {
+      "decision.category": {"allowed": ["Architecture", "Product", "Process", "Technical", "Other"], "unknown_value_code": "invalid-decision-category"},
+      "roadmap.horizon": {"allowed": "now | next | later | calendar quarter matching ^Q[1-4] \\d{4}$", "unknown_value_code": "invalid-roadmap-horizon"}
+    },
+    "transitions": "NO state-machine transitions are enforced by the validator. Status is enum-membership-validated only. Lifecycle semantics are carried by the live/retired partition: a retired artifact must not be referenced by a live artifact except via supersedes (see relationship checks).",
+    "supersession_semantics": "When an artifact moves to a retired status: (1) every inbound reference from a LIVE artifact via any edge with forbids_target_status=true becomes relationship-target-superseded (warning severity, blocking by default in rac gate); (2) the supersedes edge is exempt (the replacing decision legitimately points at the one it retires); (3) references FROM retired artifacts are exempt (historical chains); (4) MCP/consumer surfaces flag retired artifacts (grounding eval treats a surfaced superseded decision as a hard negative).",
+    "source": "core/artifacts.py metadata/retired_status, core/validation.py _validate_status_metadata, services/relationships.py _is_retired_artifact + status-consistency pass"
+  },
+
+  "relationship_types": {
+    "declaration": "Relationships are explicit Markdown sections (## Related Decisions, ## Supersedes, ...) whose body lines are references — one reference per non-empty line, well-formed leading list marker stripped, otherwise line preserved verbatim (the line text IS the reference; ADR-016)",
+    "closed_vocabulary_order": ["related_requirements", "related_decisions", "related_roadmaps", "related_prompts", "related_designs", "supersedes", "related_tickets", "verified_by", "applies_to"],
+    "registry": {
+      "related_requirements": {"range": ["requirement"], "directional": false, "acyclic": false, "symmetric": true, "forbids_target_status": true, "domain": ["requirement", "decision", "roadmap", "prompt", "design"]},
+      "related_decisions":    {"range": ["decision"],    "directional": false, "acyclic": false, "symmetric": true, "forbids_target_status": true, "domain": ["requirement", "decision", "roadmap", "prompt", "design"]},
+      "related_roadmaps":     {"range": ["roadmap"],     "directional": false, "acyclic": false, "symmetric": true, "forbids_target_status": true, "domain": ["requirement", "decision", "roadmap", "prompt", "design"]},
+      "related_prompts":      {"range": ["prompt"],      "directional": false, "acyclic": false, "symmetric": true, "forbids_target_status": true, "domain": ["requirement", "roadmap", "design"]},
+      "related_designs":      {"range": ["design"],      "directional": false, "acyclic": false, "symmetric": true, "forbids_target_status": true, "domain": ["requirement", "decision", "roadmap", "prompt"]},
+      "supersedes":           {"range": ["decision"], "directional": true, "acyclic": true, "symmetric": false, "inverse": "superseded-by", "forbids_target_status": false, "domain": ["decision"], "note": "the ONLY edge exempt from the retired-target rule"},
+      "related_tickets":      {"range": [], "external": true, "external_provider": true, "domain": ["requirement", "decision", "roadmap", "prompt", "design"], "note": "target is an external ticket key/URL; format-linted against .rac/config.yaml ticketing.provider (jira|github|linear|azure-devops|servicenow|none); never resolved in-corpus"},
+      "verified_by":          {"range": [], "external": true, "directional": true, "symmetric": false, "inverse": "verifies", "domain": ["requirement"], "note": "targets are external test/trace file paths; recorded, not resolved, not existence-checked"},
+      "applies_to":           {"range": [], "external": true, "filesystem_scoped": true, "directional": true, "symmetric": false, "inverse": "governed_by", "domain": ["decision"], "note": "targets are repo paths/globs/component labels a decision governs; LITERAL path entries (containing '/', no glob chars) are existence-checked against the repo root (applies-to-target-not-found, error); globs and component labels are recorded without checking"}
+    },
+    "domain_enforcement": "Edge legality by source type = the section appears in the type's spec.optional. A recognized vocabulary section populated on a type that does not declare it = relationship-edge-unsupported (warning severity, blocking by default in gate); it produces no edge",
+    "unrecognized_sections": "A ## heading OUTSIDE the vocabulary (e.g. '## Related Widgets') is an ordinary body section: no edge, NO finding. Frontmatter relationships: kinds are shape-validated but not vocabulary-checked (reserved). See DISCREPANCIES.md D2/D3.",
+    "cardinality": "many (declared in registry, not enforced)",
+    "referential_integrity": "Every non-external reference is resolved against the corpus alias index: relationship-target-not-found (error) / relationship-target-ambiguous (error) / relationship-self-reference (warning); resolved targets are range-checked (relationship-target-type-mismatch, error; untyped targets exempt) and status-checked (relationship-target-superseded, warning). supersedes graphs must be acyclic (relationship-cycle, error, per strongly-connected component).",
+    "all_relationship_findings_fail_validate": "rac relationships --validate exits 1 on ANY finding regardless of intrinsic severity; rac gate defaults every relationship finding to blocking",
+    "source": "core/relationship_types.py REGISTRY, services/relationships.py, core/artifacts.py spec.optional"
+  },
+
+  "requirement_line_grammar": {
+    "pattern": "A requirement line under ## Requirements is [REQ-NNN] <description>: bracketed ID matching ^REQ-\\d+$ followed by non-empty text",
+    "violations": {"no bracket prefix": "req-missing-id (error)", "malformed bracket ID": "malformed-req-id (error)", "well-formed ID, empty description": "empty-req-text (error)", "duplicate ID in file": "duplicate-req-id (error)"},
+    "uniqueness_scope": "per-file (document), not corpus-wide",
+    "quality_rules": "requirement-normative-keyword (error): lowercase/mixed-case shall|must|should is ambiguous — only ALL-CAPS BCP-14 keywords carry weight; requirement-not-singular (warning): >1 normative keyword per line (ISO 29148); requirement-non-ears (warning): no normative keyword; requirement-ears-clause (warning): opens with 'If' but no 'then'",
+    "source": "core/markdown.py _BRACKET_RE/_CANONICAL_ID_RE, core/validation.py"
+  },
+
+  "severity_model": {
+    "intrinsic_severity": {"values": ["error", "warning", "info"], "sarif_level_map": {"error": "error", "warning": "warning", "info": "note"}},
+    "enforcement_class": {"values": ["blocking", "advisory"], "suppression": "off (finding dropped)", "decides": "the rac gate exit code: exit 0 iff zero blocking findings; the SARIF level carries intrinsic severity, the exit code carries enforcement"},
+    "review_priorities": {
+      "1": {"name": "invalid artifact", "code": "invalid-artifact", "severity": "error", "fails_review": true, "meaning": "validation errors: the artifact fails its schema"},
+      "2": {"name": "broken relationship", "code": "broken-relationship", "severity": "warning", "fails_review": true, "meaning": "a declared reference does not resolve (unresolved, ambiguous, or self)"},
+      "3": {"name": "unknown artifact (missing required information)", "code": "unknown-artifact", "severity": "info", "fails_review": false, "meaning": "no schema matched"},
+      "4": {"name": "missing recommended information", "code": "missing-recommended-sections", "severity": "warning", "fails_review": false},
+      "5": {"name": "stale corpus (write-cadence nudge)", "code": "stale-corpus", "severity": "info", "fails_review": false, "note": "only fires with --stale-after; git-derived"},
+      "6": {"name": "suspect drift", "code": "suspect-artifact", "severity": "warning", "fails_review": false, "note": "git-derived: referenced target changed after the referrer"}
+    },
+    "review_fail_rule": "ReviewReport.ok is false iff any finding has priority <= 2 (PRIORITY_BROKEN_RELATIONSHIP). Priorities 3-6 are advisory and never fail.",
+    "note_on_four_tiers": "The extraction brief described 'four severity tiers'. The code defines SIX review priority levels; 5 and 6 are later advisory-only additions (v0.13.3, drift phase 1). Priorities 1-2 fail, 3-6 advisory — the '1-2 fail CI' claim holds. See DISCREPANCIES.md D1.",
+    "gate_default_enforcement": {
+      "validate error": "blocking",
+      "validate warning": "advisory",
+      "validate info": "advisory",
+      "relationships (any code)": "blocking",
+      "review priority 1-2": "blocking",
+      "review priority 3+": "advisory"
+    },
+    "policy": "A corpus MAY reclassify per finding code via .rac/config.yaml enforcement: {blocking: [...], advisory: [...], off: [...]}; precedence off > blocking > advisory > default. Severity overrides (validation: rules/types) may downgrade error->warning or suppress (off) per rule code or cap a type at warning (ADR-053). Both live in the committed config so runs stay deterministic.",
+    "source": "services/review.py, services/gate.py, core/overrides.py, services/init.py, output/sarif.py"
+  },
+
+  "checks": {
+    "_columns": "code: {source, intrinsic_severity, default_enforcement, notes}",
+    "artifact-oversize": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "file > 1 MiB cap (RAC_MAX_FILE_BYTES overridable)"},
+    "unreadable-artifact": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "non-utf8-content": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "decoded lossily"},
+    "field-truncated": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "section > 256 KiB text cap"},
+    "body-truncated": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "document > 50,000 captured lines"},
+    "malformed-frontmatter": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "bad YAML, not a mapping, aliases, depth > 32, block > 64 KiB, unterminated ---"},
+    "duplicate-frontmatter-key": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-metadata-field": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "unknown frontmatter field, missing/mistyped schema_version, non-string id, unregistered type, malformed relationships/tags shape"},
+    "unsupported-schema-version": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "schema_version not in {1}"},
+    "invalid-id-syntax": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "conflicting-identity": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "missing-title": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "multiple-titles": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "missing-<required-section>": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "per type; codes: missing-problem, missing-requirements, missing-context, missing-decision, missing-consequences, missing-outcomes, missing-initiatives, missing-objective, missing-input, missing-instructions, missing-output, missing-user-need, missing-design, missing-constraints"},
+    "invalid-requirement-status": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-decision-status": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-decision-category": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-roadmap-status": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-roadmap-horizon": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-prompt-status": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "invalid-design-status": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "roadmap-no-advancement-link": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "req-missing-id": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "empty-req-text": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "malformed-req-id": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "duplicate-req-id": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "requirement-normative-keyword": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "requirement-not-singular": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "requirement-non-ears": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "requirement-ears-clause": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "missing-success-metrics": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "missing-risks": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "empty-problem": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "too-many-requirements": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "> 50 requirement lines"},
+    "duplicate-req-text": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "ambiguous-verb": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "support/handle/allow/enable"},
+    "malformed-ticket-reference": {"source": "validate", "severity": "error", "enforcement": "blocking", "notes": "only when ticketing.provider configured"},
+    "okf-unmapped-type": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "okf-reserved-filename-collision": {"source": "validate", "severity": "error", "enforcement": "blocking"},
+    "duplicate-artifact-identifier": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "relationship-target-not-found": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "relationship-target-ambiguous": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "relationship-target-type-mismatch": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "relationship-cycle": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "applies-to-target-not-found": {"source": "relationships", "severity": "error", "enforcement": "blocking"},
+    "relationship-target-superseded": {"source": "relationships", "severity": "warning", "enforcement": "blocking", "notes": "warning-severity but blocking by default — the annotation level and the enforcement class are independent"},
+    "relationship-self-reference": {"source": "relationships", "severity": "warning", "enforcement": "blocking"},
+    "relationship-edge-unsupported": {"source": "relationships", "severity": "warning", "enforcement": "blocking"},
+    "invalid-artifact": {"source": "review", "severity": "error", "enforcement": "blocking", "notes": "priority 1"},
+    "broken-relationship": {"source": "review", "severity": "warning", "enforcement": "blocking", "notes": "priority 2"},
+    "unknown-artifact": {"source": "review", "severity": "info", "enforcement": "advisory", "notes": "priority 3"},
+    "missing-recommended-sections": {"source": "review", "severity": "warning", "enforcement": "advisory", "notes": "priority 4"},
+    "stale-corpus": {"source": "review", "severity": "info", "enforcement": "advisory", "notes": "priority 5; opt-in --stale-after"},
+    "suspect-artifact": {"source": "review", "severity": "warning", "enforcement": "advisory", "notes": "priority 6; git-derived drift advisory"}
+  },
+
+  "gate_semantics": {
+    "composition": "rac gate = validate (incl. OKF conformance) + relationships --validate + review over ONE corpus walk, each finding mapped to (source, code, intrinsic severity, enforcement class), policy applied, findings sorted by (path, line, source, code, message)",
+    "exit_contract": "exit 0 iff zero blocking findings; advisory findings never fail the gate",
+    "ci_wiring": "pr-gate-action runs `rac gate <path> --sarif`, uploads one SARIF under Code Scanning category rac-gate, and fails the check iff the CLI exit is non-zero. The action never reinterprets findings (ADR-063). The pre-merge check tier is a required merge gate on main (ADR-075).",
+    "sarif": "SARIF 2.1.0; level from intrinsic severity (error/warning/note); enforcement class carried by the exit code, NOT the SARIF level; deterministic (sorted results, no timestamps)",
+    "determinism": "same corpus state => byte-identical report, JSON, and SARIF (ADR-002)",
+    "source": "services/gate.py, output/sarif.py, pr-gate-action/action.yml, .github/workflows/pr-checks.yml"
+  },
+
+  "exit_codes": {
+    "0": "success (rac validate: no errors; relationships --validate: no findings; review: no priority 1-2; gate: no blocking findings)",
+    "1": "findings: validate errors; relationships --validate any finding; review priority 1-2; gate blocking",
+    "2": "usage / IO error",
+    "source": "cli.py module docstring (the CLI contract)"
+  },
+
+  "spec_version_declaration": {
+    "per_artifact": "frontmatter schema_version (integer, required when frontmatter present, supported = {1}, unsupported-schema-version error on anything else) — a per-ARTIFACT envelope version",
+    "corpus_level": "NONE. The corpus root config .rac/config.yaml exists (keys read today: repository_key, ticketing.provider, validation.rules/types, enforcement.blocking/advisory/off, audit) but the engine reads no corpus-level spec-version key.",
+    "spec_addition": "SPEC.md section 10 specifies `rac_spec: \"0.1\"` in .rac/config.yaml — the one authorized forward-looking addition. rac-core does not read it yet: see DISCREPANCIES.md D5 and the final report.",
+    "source": "services/init.py, core/frontmatter.py"
+  },
+
+  "reserved_structure": {
+    "config": ".rac/config.yaml at the corpus/repo root (discovered by upward walk from the working directory); holds repository_key (required for ID generation), ticketing.provider, validation severity overrides, enforcement policy",
+    "okf_reserved_filenames": "index.md and log.md are OKF-reserved generated entry points: a TYPED artifact at either name is okf-reserved-filename-collision (error); an untyped document there is legal",
+    "discovery": "*.md under the corpus root, sorted, recursive by default, dot-directories skipped; no other filenames or directory layout are reserved — directory conventions (rac/decisions/ etc.) are conventions, not normative",
+    "source": "services/init.py, core/okf.py, core/fs.py"
+  },
+
+  "okf_composition": {
+    "claim": "A RAC corpus is expressible as a conformant OKF v0.1 bundle (ADR-048: every RAC repository MUST be a conformant OKF v0.1 bundle); rac export --okf emits the derived bundle: one file per typed artifact with projected frontmatter (type mapped per OKF_TYPE, id, git-derived created/updated, tags), resolved relationships rendered as # Citations body links, generated index.md + log.md",
+    "type_map": {"requirement": "Requirement", "decision": "ADR", "design": "Design", "roadmap": "Roadmap", "prompt": "Prompt"},
+    "direction": "one-way: RAC -> OKF always; OKF -> validated RAC is not generally possible (untyped links, open type set, no lifecycle)",
+    "okf_spec_verified": "GoogleCloudPlatform/knowledge-catalog okf/SPEC.md fetched 2026-07-05: section 5.3 — 'The specific kind of relationship ... is conveyed by the surrounding prose, not by the link itself'; consumers 'MUST tolerate broken links'. Section 9 — consumers MUST NOT reject over missing optional fields, unknown type values, unknown keys, broken cross-links, missing index.md; consumers SHOULD preserve unknown keys (SHOULD, not MUST — see DISCREPANCIES.md D6). Section 11 — okf_version MAY be declared in bundle-root index.md frontmatter; consumers that do not understand it SHOULD attempt best-effort consumption. Required frontmatter: type only.",
+    "source": "core/okf.py, output/okf.py, services/okf_conformance.py, docs/okf-profile.md, ADR-048"
+  },
+
+  "limits": {
+    "max_file_bytes": "1 MiB default (RAC_MAX_FILE_BYTES env override)",
+    "max_frontmatter_bytes": 65536,
+    "max_frontmatter_depth": 32,
+    "max_field_chars": 262144,
+    "max_captured_lines": 50000,
+    "note": "robustness caps; oversize/truncation is reported as structured findings, never a crash",
+    "source": "core/limits.py"
+  },
+
+  "ticketing_providers": {
+    "vocabulary": ["jira", "github", "linear", "azure-devops", "servicenow", "none"],
+    "formats": {"jira": "^[A-Z][A-Z0-9]+-\\d+$ or URL", "github": "^owner/repo#N$ or URL", "linear": "^[A-Z][A-Z0-9]*-\\d+$ or URL", "azure-devops": "^(AB#)?\\d+$ or URL", "servicenow": "^[A-Z]{2,}\\d{5,}$ or URL"},
+    "offline": "pure format lint; the engine never contacts the ticketing system",
+    "source": "core/validation.py TICKETING_PROVIDERS"
+  }
+}

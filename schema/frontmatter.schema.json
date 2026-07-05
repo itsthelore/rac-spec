@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/itsthelore/rac-spec/main/schema/frontmatter.schema.json",
+  "title": "RAC (Requirements as Code) artifact frontmatter envelope",
+  "description": "The YAML frontmatter envelope of one RAC artifact, per SPEC.md section 6.3. Mirrors the reference validator (rac-core core/frontmatter.py) exactly: the field set is closed (an unknown field is the blocking finding invalid-metadata-field), schema_version is required whenever a frontmatter block is present, and a document with no frontmatter block at all is legal (the legacy form; that case is outside this schema). Duplicate keys, YAML aliases, nesting deeper than 32 levels, and blocks over 64 KiB are rejected by the parser before schema validation applies.",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "description": "The per-artifact envelope schema version. Required when frontmatter is present. Must be an integer (booleans are rejected) in the supported set; anything else is the blocking finding unsupported-schema-version.",
+      "type": "integer",
+      "enum": [1]
+    },
+    "id": {
+      "description": "The canonical artifact identifier: <repository key>-<12-char Crockford base32 suffix (no I/L/O/U)>. Matched case-insensitively and normalized to uppercase; a non-matching value is the blocking finding invalid-id-syntax. SPEC.md section 6.4.",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{1,9}-[0-9A-HJKMNP-TV-Za-hjkmnp-tv-z]{12}$"
+    },
+    "type": {
+      "description": "The declared artifact type. Closed set (SPEC.md section 6.1); an unregistered value is the blocking finding invalid-metadata-field.",
+      "type": "string",
+      "enum": ["requirement", "decision", "roadmap", "prompt", "design"]
+    },
+    "relationships": {
+      "description": "RESERVED (SPEC.md section 8.6): relationship kind -> list of artifact-ID strings. Shape-validated only; the reference validator does not check kinds against the relationship vocabulary and does not yet consume this field — body relationship sections remain authoritative.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "tags": {
+      "description": "Optional descriptive labels (OKF-reserved field): a list of non-empty strings. A malformed shape is the blocking finding invalid-metadata-field.",
+      "type": "array",
+      "items": { "type": "string", "pattern": "\\S" }
+    }
+  },
+  "required": ["schema_version"],
+  "additionalProperties": false
+}
