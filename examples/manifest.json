@@ -1,0 +1,116 @@
+{
+  "_meta": {
+    "purpose": "Machine-readable conformance surface for the RAC (Requirements as Code) specification examples. Each valid corpus must produce zero blocking findings; each invalid case must produce exactly the expected blocking finding codes (advisory findings are permitted alongside). Commands are shown for the reference implementation (rac-core); any conformant implementation must agree.",
+    "note": "Example corpora are independent. Do not validate examples/ as one tree: identifiers are unique per corpus, and the invalid cases are invalid by design."
+  },
+  "valid": [
+    {
+      "path": "examples/minimal-corpus",
+      "command": "rac validate examples/minimal-corpus && rac relationships examples/minimal-corpus --validate",
+      "expect": { "exit": 0, "blocking_findings": 0 }
+    },
+    {
+      "path": "examples/valid",
+      "command": "rac validate examples/valid && rac relationships examples/valid --validate",
+      "expect": { "exit": 0, "blocking_findings": 0 }
+    }
+  ],
+  "invalid": [
+    {
+      "path": "examples/invalid/missing-required-section.md",
+      "command": "rac validate examples/invalid/missing-required-section.md",
+      "expected": [{ "code": "missing-consequences", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.6"
+    },
+    {
+      "path": "examples/invalid/invalid-status.md",
+      "command": "rac validate examples/invalid/invalid-status.md",
+      "expected": [{ "code": "invalid-decision-status", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 7"
+    },
+    {
+      "path": "examples/invalid/unknown-frontmatter-field.md",
+      "command": "rac validate examples/invalid/unknown-frontmatter-field.md",
+      "expected": [{ "code": "invalid-metadata-field", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.3"
+    },
+    {
+      "path": "examples/invalid/invalid-id-syntax.md",
+      "command": "rac validate examples/invalid/invalid-id-syntax.md",
+      "expected": [{ "code": "invalid-id-syntax", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.4"
+    },
+    {
+      "path": "examples/invalid/malformed-req-id.md",
+      "command": "rac validate examples/invalid/malformed-req-id.md",
+      "expected": [{ "code": "malformed-req-id", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.7"
+    },
+    {
+      "path": "examples/invalid/duplicate-req-id.md",
+      "command": "rac validate examples/invalid/duplicate-req-id.md",
+      "expected": [{ "code": "duplicate-req-id", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.7"
+    },
+    {
+      "path": "examples/invalid/normative-keyword.md",
+      "command": "rac validate examples/invalid/normative-keyword.md",
+      "expected": [{ "code": "requirement-normative-keyword", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.7"
+    },
+    {
+      "path": "examples/invalid/multiple-titles.md",
+      "command": "rac validate examples/invalid/multiple-titles.md",
+      "expected": [{ "code": "multiple-titles", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.2"
+    },
+    {
+      "path": "examples/invalid/corpus-target-not-found",
+      "command": "rac relationships examples/invalid/corpus-target-not-found --validate",
+      "expected": [{ "code": "relationship-target-not-found", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 8.3"
+    },
+    {
+      "path": "examples/invalid/corpus-target-superseded",
+      "command": "rac relationships examples/invalid/corpus-target-superseded --validate",
+      "expected": [{ "code": "relationship-target-superseded", "severity": "warning", "enforcement": "blocking" }],
+      "spec": "SPEC.md 7.2, 8.3"
+    },
+    {
+      "path": "examples/invalid/corpus-type-mismatch",
+      "command": "rac relationships examples/invalid/corpus-type-mismatch --validate",
+      "expected": [{ "code": "relationship-target-type-mismatch", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 8.3"
+    },
+    {
+      "path": "examples/invalid/corpus-supersedes-cycle",
+      "command": "rac relationships examples/invalid/corpus-supersedes-cycle --validate",
+      "expected": [{ "code": "relationship-cycle", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 8.4"
+    },
+    {
+      "path": "examples/invalid/corpus-duplicate-identifier",
+      "command": "rac relationships examples/invalid/corpus-duplicate-identifier --validate",
+      "expected": [{ "code": "duplicate-artifact-identifier", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 6.4"
+    },
+    {
+      "path": "examples/invalid/corpus-edge-unsupported",
+      "command": "rac relationships examples/invalid/corpus-edge-unsupported --validate",
+      "expected": [{ "code": "relationship-edge-unsupported", "severity": "warning", "enforcement": "blocking" }],
+      "spec": "SPEC.md 8.2"
+    },
+    {
+      "path": "examples/invalid/corpus-self-reference",
+      "command": "rac relationships examples/invalid/corpus-self-reference --validate",
+      "expected": [{ "code": "relationship-self-reference", "severity": "warning", "enforcement": "blocking" }],
+      "spec": "SPEC.md 8.3"
+    },
+    {
+      "path": "examples/invalid/reserved-filename",
+      "command": "rac validate examples/invalid/reserved-filename",
+      "expected": [{ "code": "okf-reserved-filename-collision", "severity": "error", "enforcement": "blocking" }],
+      "spec": "SPEC.md 5"
+    }
+  ]
+}
