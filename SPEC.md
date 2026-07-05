@@ -78,7 +78,17 @@ before they land.
   typically, replaced; the replacing decision points at the retired one via
   the `supersedes` edge (§7.2).
 - **Finding** — one validation result, identified by a stable machine code,
-  with an intrinsic severity and an enforcement class (§9).
+  with an intrinsic *severity* and an *enforcement class* (§9).
+- **Severity** — a finding's intrinsic annotation level: `error`, `warning`,
+  or `info` (§9.1). Independent of whether the finding blocks.
+- **Enforcement class** — whether a finding blocks the gate: `blocking` or
+  `advisory` (§9.1). The exit signal fails iff a blocking finding is present.
+- **Enforcement policy** — the corpus-committed mapping (in
+  `.rac/config.yaml`) that MAY reclassify a finding's enforcement class or
+  suppress it (§9.5). A *mechanism*, not part of spec conformance.
+- **Default policy** — the enforcement classes with no policy overrides
+  present (§9.3). Spec conformance is always evaluated under the default
+  policy (§9.7); an unqualified conformance claim means the default policy.
 - **Gate** — the composed enforcement run (structural validation, relationship
   integrity, and review) whose exit signal a CI check consumes (§9.4).
 - **Tier** — a finding's review priority level, 1 (highest impact) through 6
@@ -94,27 +104,26 @@ mechanical and one-directional:
 
 1. A RAC corpus is expressible as a conformant OKF v0.1 bundle. A conformant
    producer MUST be able to emit the derived bundle: one file per typed
-   artifact whose OKF `type` maps from the RAC type
-   (`requirement`→`Requirement`, `decision`→`ADR`, `design`→`Design`,
-   `roadmap`→`Roadmap`, `prompt`→`Prompt`), plus generated `index.md` and
-   `log.md` entry points. A registered RAC type without an OKF mapping is a
-   conformance error (`okf-unmapped-type`), never a silent omission.
-   <!-- inv: okf_composition -->
-2. RAC's additional frontmatter keys ride as OKF producer-defined keys, which
-   OKF consumers are directed to preserve and not reject (OKF §9). The export
-   is therefore lossless for the carrier.
-3. RAC identity is the explicit `id` field, not the file path (§6.4). A
-   RAC-aware consumer MUST resolve links by identifier; OKF's path-as-identity
-   does not survive a file rename, and RAC's does.
-4. The reverse direction is not defined. An arbitrary OKF bundle has untyped
+   artifact whose OKF `type` maps from the RAC type (`requirement`→`Requirement`,
+   `decision`→`ADR`, `design`→`Design`, `roadmap`→`Roadmap`,
+   `prompt`→`Prompt`), plus generated `index.md`/`log.md` entry points. A
+   registered RAC type without an OKF mapping is a conformance error
+   (`okf-unmapped-type`), never a silent omission. <!-- inv: okf_composition -->
+2. RAC's other envelope keys (`schema_version`, `id`, `relationships`, `tags`)
+   ride as OKF producer-defined keys, which OKF consumers are directed to
+   preserve and not reject (OKF §9), so the export is lossless.
+3. RAC identity is the explicit `id` field, not the file path (§6.4): a
+   RAC-aware consumer MUST resolve links by identifier. OKF's path-as-identity
+   does not survive a file rename; RAC's does.
+4. The reverse direction is not defined — an arbitrary OKF bundle has untyped
    links, an open `type` set, and no lifecycle, so it cannot in general become
-   a valid RAC corpus without human classification. This asymmetry is
-   deliberate: RAC is the strict semantic layer over the permissive carrier.
+   a valid RAC corpus without human classification. That asymmetry is the
+   point: RAC is the strict semantic layer over the permissive carrier.
 
-Because a typed artifact named `index.md` or `log.md` would collide with the
-generated bundle entry points, a typed artifact MUST NOT use either filename
-(`okf-reserved-filename-collision`). An untyped document at those paths is a
-legitimate entry point. <!-- inv: reserved_structure -->
+A typed artifact MUST NOT be named `index.md` or `log.md`
+(`okf-reserved-filename-collision`) — those collide with the generated bundle
+entry points; an untyped document at those paths is a legitimate entry point.
+<!-- inv: reserved_structure -->
 
 ## 6. Artifact model
 
@@ -246,9 +255,8 @@ and extracted but never scored and never reported missing.
 
 Each type's optional sections are exactly its relationship sections (§8.2)
 plus, for `decision`, `Supersedes`. Recognized heading synonyms (e.g.
-`Success Criteria` → `Success Metrics`, `Alternatives` → `Alternatives
-Considered`) aid classification only; validation expects the canonical
-headings. <!-- inv: sections_per_type -->
+`Success Criteria` → `Success Metrics`) aid classification only; validation
+expects the canonical headings. <!-- inv: sections_per_type -->
 
 ### 6.7 Requirement lines
 
@@ -266,10 +274,14 @@ uniqueness is per-file.
 
 Normative language inside requirement lines is disciplined per BCP 14: a
 lowercase or mixed-case `shall`/`must`/`should` is ambiguous and blocking
-(`requirement-normative-keyword`); more than one normative keyword per line,
-no normative keyword at all, and an `If …` opening without a `then` clause are
-advisory findings (`requirement-not-singular`, `requirement-non-ears`,
-`requirement-ears-clause`). <!-- inv: requirement_line_grammar -->
+(`requirement-normative-keyword`), because only ALL-CAPS keywords carry
+normative weight. <!-- inv: requirement_line_grammar -->
+
+> **Not specified.** The reference implementation also emits *advisory*
+> ISO/IEC/IEEE 29148 "singular requirement" and EARS response-clause findings
+> (`requirement-not-singular`, `requirement-non-ears`, `requirement-ears-clause`;
+> ADR-056). These are authoring heuristics, not conformance rules, and are
+> deliberately excluded — only the BCP-14 casing rule above is normative.
 
 ```markdown
 ## Requirements
@@ -283,13 +295,14 @@ advisory findings (`requirement-not-singular`, `requirement-non-ears`,
 The JSON Schemas in `schema/` are the normative machine-readable form of
 §6.3–§6.7: `schema/frontmatter.schema.json` for the envelope,
 `schema/artifact.schema.json` for the parsed per-type structural contract.
-Prose and schema are generated from the same extraction inventory and
-cross-checked; where they are found to disagree, that is a defect in this
-specification (file an issue), not a license to pick one. This requirement
-exists because prose-only specs drift: OKF shipped prose-only, and its own
-reference parser diverged from the spec text within days of launch (the parser
-requires four frontmatter fields; OKF's text requires one — see the
-compatibility note in `conformance/conformance.md`).
+They are documentation for implementers, derived from validator behavior — the
+reference implementation itself ships no JSON Schema and takes no
+schema-validation dependency, so these are not a `rac-core` artifact. Prose
+and schema are cross-checked against one extraction inventory; a disagreement
+is a defect in this specification (file an issue), not a license to pick one.
+Prose-only specs drift: OKF shipped prose-only and its own reference parser
+diverged from the text within days (it requires four frontmatter fields; the
+text requires one — see `conformance/conformance.md`).
 
 ## 7. The `status` lifecycle
 
@@ -338,21 +351,9 @@ When an artifact carries a retired status:
 - A consumer MUST NOT present a retired artifact as current knowledge
   (conformant-consumer rule, §9.6).
 
-```markdown
----
-schema_version: 1
-id: RAC-01JYAAAAAAAA
-type: decision
----
-# ADR-009: Store sessions in Redis
-
-## Status
-
-Superseded
-...
-```
-
-The replacing decision declares, in its own body:
+The retired decision (`RAC-01JYAAAAAAAA`) sets `## Status` to `Superseded`;
+the replacing decision names it in its own body, the one edge allowed to point
+at a retired target:
 
 ```markdown
 ## Supersedes
@@ -480,9 +481,8 @@ conformance.** <!-- inv: severity_model -->
 | 5 | Stale corpus (write-cadence nudge; opt-in) | `stale-corpus` | no |
 | 6 | Suspect drift (referenced target changed later) | `suspect-artifact` | no |
 
-Tiers 5 and 6 are advisory-only extensions of the original four-tier model;
-they exist so version-control-derived hygiene signals have a reporting slot
-without ever gating.
+Tiers 5 and 6 are advisory-only extensions that give version-control-derived
+hygiene signals a reporting slot without ever gating.
 
 ### 9.3 The normative check table
 
@@ -506,7 +506,6 @@ and info advisory:**
 | `okf-unmapped-type`, `okf-reserved-filename-collision` | error | blocking |
 | `non-utf8-content`, `field-truncated`, `body-truncated` | warning | advisory |
 | `roadmap-no-advancement-link` | warning | advisory |
-| `requirement-not-singular`, `requirement-non-ears`, `requirement-ears-clause` | warning | advisory |
 | `missing-success-metrics`, `missing-risks`, `empty-problem`, `too-many-requirements`, `duplicate-req-text`, `ambiguous-verb` | warning | advisory |
 
 **Relationship integrity (source: `relationships`) — every finding is blocking
@@ -551,20 +550,24 @@ finding list. Exit contract: <!-- inv: gate_semantics --> <!-- inv: exit_codes -
 A conformant CI integration MUST fail its check exactly when the gate exits
 non-zero, and MUST NOT reinterpret findings or decide independently what
 blocks: enforcement classification belongs to the engine under the committed
-corpus policy. Reports MUST be deterministic — the same corpus bytes yield a
-byte-identical report (stable sort, no timestamps). In SARIF output the level
-encodes the *intrinsic severity* (`error`/`warning`/`note`); the enforcement
-class is carried solely by the exit code.
+corpus policy. Reports MUST be deterministic — the same corpus bytes **and
+the same committed configuration** yield a byte-identical report (stable sort,
+no timestamps). In SARIF output the level encodes the *intrinsic severity*
+(`error`/`warning`/`note`); the enforcement class is carried solely by the
+exit code.
 
-### 9.5 Policy: overrides are governed, committed, and deterministic
+### 9.5 Policy: overrides are a governed, committed mechanism
 
-A corpus MAY tune enforcement in its committed configuration:
-per-rule/per-type severity overrides (`validation:` — downgrade `error` →
-`warning`, or `off` to suppress) and per-code enforcement reclassification
-(`enforcement:` — `blocking` / `advisory` / `off`; precedence `off` >
-`blocking` > `advisory` > default). Because the policy is a committed file,
-the same repository state always yields the same findings and exit code. A
-tool MUST NOT apply enforcement policy from any source outside the corpus.
+The classifications in §9.3 are the **default policy** — the enforcement
+classes with no overrides present. A corpus MAY tune them in its committed
+configuration: per-rule/per-type severity overrides (`validation:` — downgrade
+`error` → `warning`, or `off` to suppress) and per-code enforcement
+reclassification (`enforcement:` — `blocking` / `advisory` / `off`; precedence
+`off` > `blocking` > `advisory` > default). This is a *mechanism*, not part of
+spec conformance: an override changes the local gate verdict, never what §9.3
+specifies. Because the policy is a committed file, the same repository state
+always yields the same findings and exit code, and a tool MUST NOT apply
+enforcement policy from any source outside the corpus.
 <!-- inv: severity_model -->
 
 ### 9.6 What a conformant consumer MUST reject
@@ -588,25 +591,32 @@ The inversion of OKF's permissiveness is deliberate. Descriptive knowledge
 degrades gracefully when stale: an agent reading a slightly outdated table
 description writes slightly worse queries. Prescriptive knowledge does not:
 an agent citing a superseded architecture decision re-introduces the exact
-mistake the team already paid to rule out. A consumer that guesses on RAC
-enum values is worse than one that fails, because its output is
+mistake the team already paid to rule out. A consumer that guesses on an
+unknown enum value is worse than one that fails: its output is
 indistinguishable from grounded knowledge.
 
 ### 9.7 Conformance levels
 
-- **Conformant corpus** — structural validation (§9.3, `validate` source)
-  yields zero blocking findings, and every artifact-level rule in §6–§7
-  holds.
+Conformance is always evaluated under the **default policy** (§9.5): local
+severity overrides and enforcement reclassifications change a repository's own
+gate verdict, never its spec conformance — which is what makes a conformance
+claim portable. A claim MUST name the policy it was evaluated under; an
+unqualified claim means the default policy.
+
+- **Conformant corpus** — under the default policy, structural validation
+  (§9.3, `validate` source) yields zero blocking findings, and every
+  artifact-level rule in §6–§7 holds.
 - **Gated corpus** — a conformant corpus whose full gate run (§9.4) yields
-  zero blocking findings: link integrity holds, no live artifact references a
-  retired one outside `supersedes`, and review tiers 1–2 are empty.
+  zero blocking findings under the default policy: link integrity holds, no
+  live artifact references a retired one outside `supersedes`, and review
+  tiers 1–2 are empty.
 - **Conformant producer** — emits only artifacts that are (individually and
   jointly) a conformant corpus, and never emits an enum value, frontmatter
   field, or edge name outside this specification (extend via §11, never via
   enum values).
-- **Conformant consumer** — resolves identity per §6.4, preserves unknown
-  producer-defined content it round-trips (§11), refuses everything in §9.6,
-  and MUST NOT present a retired artifact as current.
+- **Conformant consumer** — resolves identity per §6.4, preserves the
+  extension content it round-trips (§11), refuses everything in §9.6, and
+  MUST NOT present a retired artifact as current.
 
 ## 10. Versioning and compatibility policy
 
@@ -623,6 +633,17 @@ configuration, `.rac/config.yaml`: <!-- inv: spec_version_declaration -->
 repository_key: RAC
 rac_spec: "0.1"
 ```
+
+**`rac_spec` versus `schema_version`.** These are two different version axes
+and MUST NOT be conflated. `rac_spec` (corpus-level, this section) declares
+which version of *this specification* — the whole contract of §6–§11 — a
+corpus targets. `schema_version` (per-artifact frontmatter, §6.3) declares
+which version of the *frontmatter envelope* an individual artifact uses. Each
+spec version states which envelope versions it accepts: **spec v0.1 accepts
+`schema_version: 1`, and no other.** A future spec version MAY accept
+additional envelope versions; that mapping is part of the spec contract, so a
+consumer resolves envelope compatibility only after it has accepted the
+declared `rac_spec` (§10.3).
 
 The declaration lives in the corpus config, uniformly, no exceptions. OKF §11
 puts its `okf_version` declaration in the frontmatter of `index.md` — a file
@@ -662,12 +683,11 @@ refusal, which makes it load-bearing. The field is not the differentiator;
 the failure semantics are.
 
 The rationale is diagnosability: strict unknown-value handling (§9.6) is only
-actionable if a consumer can distinguish "corrupt corpus" from "corpus
-targeting a newer spec." Strict-validation ecosystems pair failure with
-version declaration for exactly this reason (JSON Schema's `$schema`,
-OpenAPI's version field). Accordingly, an error message for an unknown enum
-value MUST include the corpus's declared spec version, so the failure reads
-"corpus targets 0.3, consumer supports 0.1," never an opaque rejection.
+actionable if a consumer can distinguish a corrupt corpus from one targeting a
+newer spec — which is why strict ecosystems pair failure with a version field
+(JSON Schema's `$schema`, OpenAPI's version). Accordingly, an unknown-enum
+error MUST include the declared spec version, so it reads "corpus targets 0.3,
+consumer supports 0.1," never an opaque rejection.
 
 ## 11. Extension points
 
@@ -683,18 +703,17 @@ closed enums**:
 - **Non-vocabulary body sections** are free: any `##` section outside a
   type's required/recommended/optional set is carried, searchable content
   with no validation semantics.
-- Consumers MUST preserve extension content they round-trip — `tags`, the
-  reserved `relationships` map, and free body sections — so the OKF export
-  stays lossless.
+- Consumers MUST preserve extension content they round-trip (`tags`, the
+  `relationships` map, free body sections) so the OKF export stays lossless.
 - What extension MUST NOT do: add a `status` or `category` value, a
   relationship section name, or an artifact type. Those are enum changes and
   follow §10.2.
 
 ## Appendix A — Minimal complete corpus
 
-The smallest corpus that validates with zero blocking findings: the config
-with the spec-version declaration, one decision, one requirement, one typed
-link between them. (Also shipped as `examples/minimal-corpus/`.)
+The smallest corpus that validates with zero blocking findings — config with
+the spec-version declaration, one decision, one requirement, one typed link —
+also shipped (recommended sections filled in) as `examples/minimal-corpus/`:
 
 ```text
 minimal/
@@ -765,18 +784,13 @@ Product decisions are invisible to the tools that need them.
 
 - [REQ-001] The team MUST record each significant decision as one decision artifact.
 
-## Success Metrics
-
-- Every merged change that reverses a prior decision cites the ADR it supersedes.
-
-## Risks
-
-- The corpus goes stale if capture is not part of the review workflow.
-
 ## Related Decisions
 
 - MIN-01JYX0000001
 ```
+
+(Recommended sections are omitted here for brevity — their absence is
+advisory, never blocking.)
 
 ---
 

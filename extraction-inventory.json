@@ -143,7 +143,7 @@
     "pattern": "A requirement line under ## Requirements is [REQ-NNN] <description>: bracketed ID matching ^REQ-\\d+$ followed by non-empty text",
     "violations": {"no bracket prefix": "req-missing-id (error)", "malformed bracket ID": "malformed-req-id (error)", "well-formed ID, empty description": "empty-req-text (error)", "duplicate ID in file": "duplicate-req-id (error)"},
     "uniqueness_scope": "per-file (document), not corpus-wide",
-    "quality_rules": "requirement-normative-keyword (error): lowercase/mixed-case shall|must|should is ambiguous — only ALL-CAPS BCP-14 keywords carry weight; requirement-not-singular (warning): >1 normative keyword per line (ISO 29148); requirement-non-ears (warning): no normative keyword; requirement-ears-clause (warning): opens with 'If' but no 'then'",
+    "quality_rules": "requirement-normative-keyword (error): lowercase/mixed-case shall|must|should is ambiguous — only ALL-CAPS BCP-14 keywords carry weight. SPEC SCOPE DECISION: the BCP-14 casing rule IS normative (SPEC.md 6.7). The three ADR-056 authoring-shape lints — requirement-not-singular (warning, ISO 29148 singular), requirement-non-ears (warning, no normative keyword), requirement-ears-clause (warning, 'If' without 'then') — DO exist in the validator but are DELIBERATELY EXCLUDED from the spec as implementation-specific authoring guidance, noted non-normatively in SPEC.md 6.7. They are recorded in the checks table below as validator behavior, not as spec-normative checks.",
     "source": "core/markdown.py _BRACKET_RE/_CANONICAL_ID_RE, core/validation.py"
   },
 
@@ -201,9 +201,9 @@
     "malformed-req-id": {"source": "validate", "severity": "error", "enforcement": "blocking"},
     "duplicate-req-id": {"source": "validate", "severity": "error", "enforcement": "blocking"},
     "requirement-normative-keyword": {"source": "validate", "severity": "error", "enforcement": "blocking"},
-    "requirement-not-singular": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
-    "requirement-non-ears": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
-    "requirement-ears-clause": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
+    "requirement-not-singular": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "ADR-056 authoring lint; EXCLUDED from spec by scope decision (implementation-only)"},
+    "requirement-non-ears": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "ADR-056 authoring lint; EXCLUDED from spec by scope decision (implementation-only)"},
+    "requirement-ears-clause": {"source": "validate", "severity": "warning", "enforcement": "advisory", "notes": "ADR-056 authoring lint; EXCLUDED from spec by scope decision (implementation-only)"},
     "missing-success-metrics": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
     "missing-risks": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
     "empty-problem": {"source": "validate", "severity": "warning", "enforcement": "advisory"},
