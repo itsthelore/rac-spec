@@ -90,7 +90,8 @@ ecosystem itself: Google's reference parser has been observed to require
 `type`, `title`, `description`, and `timestamp`, although the OKF spec text
 requires only `type`. RAC targets the **spec text**. Bundles exported per
 SPEC.md §5 carry `type` (mapped), `id`, git-derived `created`/`updated`, and
-`tags` when present; they do not carry a frontmatter `title` (OKF derives it
-from the H1) or `description`. A consumer pinned to the behavior of Google's
+`tags` when present; they do not carry a frontmatter `title` (OKF-optional; a
+consumer without it MAY derive a title from the filename, OKF §4.1) or
+`description`. A consumer pinned to the behavior of Google's
 reference parser rather than the OKF spec text may therefore reject a valid
 bundle; that is a defect in that parser, not in the bundle.

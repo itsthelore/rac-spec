@@ -112,9 +112,11 @@ mechanical and one-directional:
 2. RAC's other envelope keys (`schema_version`, `id`, `relationships`, `tags`)
    ride as OKF producer-defined keys, which OKF consumers are directed to
    preserve and not reject (OKF §9), so the export is lossless. RAC does not
-   project a frontmatter `title` or `description` — OKF derives `title` from
-   the H1 (§6.2), and both are OKF-optional; `conformance/conformance.md`
-   records the parser-compatibility caveat this raises.
+   project a frontmatter `title` or `description`; both are OKF-optional, and
+   an OKF consumer without one MAY fall back to the filename (OKF §4.1). A
+   producer MAY project the H1 as `title` for better display in permissive
+   consumers; `conformance/conformance.md` records the parser-compatibility
+   caveat this raises.
 3. RAC identity is the explicit `id` field, not the file path (§6.4): a
    RAC-aware consumer MUST resolve links by identifier. OKF's path-as-identity
    does not survive a file rename; RAC's does.
