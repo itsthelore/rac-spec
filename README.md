@@ -14,14 +14,13 @@ alongside it.
 
 ## Isn't this just OKF?
 
-No, and the difference is the point. Google's Open Knowledge Format (OKF,
-v0.1, June 2026) standardizes the *carrier* — a Git tree of Markdown with
-YAML frontmatter — and is deliberately permissive: one required field, and
-consumers are forbidden from rejecting bundles over unknown types, missing
-fields, or broken cross-links. That permissiveness is correct for OKF's job,
-which is portable descriptive knowledge: tables, metrics, runbooks. It is
-wrong for RAC's job, which is prescriptive product decisions with
-accountability.
+No. The two specify different layers. Google's Open Knowledge Format (OKF,
+v0.1, June 2026) standardizes the *carrier*, a Git tree of Markdown with
+YAML frontmatter, and keeps it permissive: one required field, and consumers
+are forbidden from rejecting bundles over unknown types, missing fields, or
+broken cross-links. That permissiveness is correct for OKF's job, which is
+portable descriptive knowledge: tables, metrics, runbooks. It is wrong for
+RAC's job, which is prescriptive product decisions with accountability.
 
 RAC writes the same carrier and specifies the semantic layer OKF explicitly
 leaves to producers: a closed `status` lifecycle with supersession, a closed
@@ -30,10 +29,9 @@ identity that survives file renames (OKF's path-as-identity does not), and
 write-time enforcement — `rac validate` and `rac gate` reject broken links
 and references to retired decisions in CI, before the knowledge lands. The
 two compose rather than compete: `rac export --okf` emits a conformant OKF
-bundle, so any OKF consumer can read a RAC corpus. The reverse direction —
-an arbitrary OKF bundle becoming a validated RAC corpus — is not generally
-possible, and that asymmetry is the point: RAC is the strict layer, OKF the
-permissive carrier beneath it.
+bundle, so any OKF consumer can read a RAC corpus. The reverse direction (an
+arbitrary OKF bundle becoming a validated RAC corpus) is not generally
+possible. RAC is the strict layer; OKF is the permissive carrier beneath it.
 
 ## Why does the semantic layer need to be strict when OKF chose permissive?
 
@@ -49,13 +47,13 @@ system of record.
 ## What is Lore, then?
 
 Lore is the product surface: the MCP server identity, CLI branding, and
-tooling built on RAC. This repository is deliberately implementation-neutral.
-Nothing in the specification requires `rac-core`, Python, or MCP; everything
-normative is checkable from the files alone.
+tooling built on RAC. This repository is implementation-neutral. Nothing in
+the specification requires `rac-core`, Python, or MCP; everything normative
+is checkable from the files alone.
 
 ## Can I implement this without rac-core?
 
-Yes — that is what this repository is for. Start with
+Yes. That is what this repository is for. Start with
 [SPEC.md](SPEC.md), then [`schema/`](schema/) for the machine-readable
 frontmatter and per-type structural contracts, [`vocabulary/`](vocabulary/)
 for the closed `status` and relationship enums,
@@ -72,7 +70,7 @@ If you build an implementation, open an issue here to have it listed.
 ## How stable is this?
 
 This is v0.1.0, extracted from a validator with more than a thousand commits
-and twenty-eight releases of dogfooding behind it — but it is pre-1.0, and
+and twenty-eight releases of dogfooding behind it. It is still pre-1.0, and
 breaking changes are expected. The compatibility policy in
 [SPEC.md §10](SPEC.md) governs what may change in minor versions (new enum
 values, new advisory checks) and what requires a major version (removing or

@@ -14,8 +14,7 @@ form of [SPEC.md](../SPEC.md) §6.3–§6.7:
 ## What these schemas cannot express
 
 The rules that make RAC *RAC* are properties of a **corpus**, not of one file,
-so they are normative in SPEC.md and are **not** — and cannot be — encoded
-here:
+so they are normative in SPEC.md and are not, and cannot be, encoded here:
 
 - **Referential integrity** (§8.3) — a reference resolving uniquely to another
   artifact of the edge's range type.
@@ -30,8 +29,8 @@ here:
 - **Versioning and compatibility** (§10) — the `rac_spec` declaration,
   mandatory version refusal, and what may change in a minor vs. major release.
 
-A validator that only ran these schemas would accept corpora RAC rejects.
-**SPEC.md is the contract; these schemas are one projection of it.** The
-reference implementation (`rac-core`) ships no JSON Schema at all — its
-validator is imperative code (ADR-052) — so these files are derived
-documentation for implementers, not a dependency of any tool.
+A validator that ran only these schemas would accept corpora RAC rejects.
+SPEC.md is the contract; these files restate one layer of it. The reference
+implementation (`rac-core`) ships no JSON Schema at all (its validator is
+imperative code, ADR-052), so these files are derived documentation for
+implementers, not a dependency of any tool.

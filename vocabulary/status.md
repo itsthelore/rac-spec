@@ -21,9 +21,9 @@ line of the `## Status` section body, matched case-insensitively.
 | prompt | `Active` | in use | live |
 | prompt | `Deprecated` | withdrawn | **retired** |
 
-Status is knowledge currency — is this still what we believe? — never work or
-delivery state. Per-milestone progress, ticket state, and sprint tracking are
-out of scope by design.
+Status records knowledge currency (whether the artifact still reflects what
+the team believes), never work or delivery state. Per-milestone progress,
+ticket state, and sprint tracking are out of scope.
 
 ## Legal transitions
 

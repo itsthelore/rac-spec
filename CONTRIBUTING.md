@@ -58,5 +58,5 @@ an issue and record the resolution.
   (SPEC.md §10.2) — extension is via new keys, never new enum values.
 - Normative statements that no validator check enforces or could enforce
   deterministically and offline.
-- Describing this specification as "a standard." That status is earned by
-  independent implementations, not claimed in text.
+- Describing this specification as "a standard." That status comes from
+  independent implementations, not from this text.
