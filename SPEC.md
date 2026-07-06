@@ -581,15 +581,17 @@ reclassification (`enforcement:` — `blocking` / `advisory` / `off`; precedence
 spec conformance: an override changes the local gate verdict, never what §9.3
 specifies. Because the policy is a committed file, the same repository state
 always yields the same findings and exit code, and a tool MUST NOT apply
-enforcement policy from any source outside the corpus.
+enforcement policy from any source outside the corpus. The policy governs the
+gate verdict only: it never relaxes the consumer obligations in §9.6, which
+hold regardless of any local reclassification.
 <!-- inv: severity_model -->
 
 ### 9.6 What a conformant consumer MUST reject
 
 OKF §9 enumerates what consumers must *not* reject over — unknown types,
 missing optional fields, broken cross-links, unknown keys, missing indexes.
-RAC's strict mirror, same device, inverted content — a conformant consumer
-MUST reject (refuse to treat as a valid corpus):
+RAC's strict mirror inverts that list. A conformant consumer MUST reject
+(refuse to treat as a valid corpus):
 
 1. any tier 1 or tier 2 finding — equivalently, any blocking finding under the
    corpus's committed policy;
@@ -598,11 +600,20 @@ MUST reject (refuse to treat as a valid corpus):
    (`relationship-edge-unsupported`) — fail, do not guess. (A heading outside
    the vocabulary is prose, not a relationship (§8.2), and is out of scope
    here.)
-3. any reference from a live artifact to a retired artifact presented as
-   current (outside `supersedes`);
-4. any corpus declaring a spec version newer than the consumer supports
+3. any corpus declaring a spec version newer than the consumer supports
    (§10.3) — and, per artifact, any `schema_version` outside the supported
    set.
+
+Separately from corpus rejection, and independent of the corpus's committed
+policy: a conformant consumer MUST NOT present a retired artifact as current
+knowledge (§9.7). This is a per-artifact presentation rule for the serving
+layer, not a corpus-validity condition. A corpus MAY downgrade
+`relationship-target-superseded` so a live-to-retired reference passes its
+gate (§9.5, a common migration posture); the reference still MUST be
+surfaced as pointing at retired knowledge, never as current. The two actors
+differ: the gate decides whether a corpus state may land, the consumer
+decides how landed knowledge is presented, and only the first is
+policy-tunable.
 
 The inversion of OKF's permissiveness is deliberate. Descriptive knowledge
 degrades gracefully when stale — an agent reading a slightly outdated table
