@@ -25,13 +25,12 @@ release versioning.
 
 ## 3. Motivation, goals, and non-goals
 
-Coding agents re-introduce mistakes their teams already paid to rule out,
-because the decision that ruled them out lives in prose an agent cannot be
-trusted to interpret — or nowhere at all. RAC makes that knowledge a typed,
+Teams rule mistakes out by recording decisions. When the record lives in
+unstructured prose, or is never written, a coding agent cannot reliably apply
+it and re-introduces the mistake. RAC makes the record a typed,
 machine-validated corpus: every artifact has a type, an identity, a lifecycle
-status, and explicitly typed links to the artifacts it relates to, and a CI
-gate rejects corpus states that would mislead a reader — human or agent —
-before they land.
+status, and typed links to the artifacts it relates to, and a CI gate rejects
+corpus states that would mislead a reader, human or agent, before they land.
 
 **Goals.**
 
@@ -120,10 +119,10 @@ mechanical and one-directional:
 3. RAC identity is the explicit `id` field, not the file path (§6.4): a
    RAC-aware consumer MUST resolve links by identifier. OKF's path-as-identity
    does not survive a file rename; RAC's does.
-4. The reverse direction is not defined — an arbitrary OKF bundle has untyped
+4. The reverse direction is not defined. An arbitrary OKF bundle has untyped
    links, an open `type` set, and no lifecycle, so it cannot in general become
-   a valid RAC corpus without human classification. That asymmetry is the
-   point: RAC is the strict semantic layer over the permissive carrier.
+   a valid RAC corpus without human classification. Conversion is specified
+   only from the strict layer to the permissive carrier.
 
 A typed artifact MUST NOT be named `index.md` or `log.md`
 (`okf-reserved-filename-collision`) — those collide with the generated bundle
@@ -181,7 +180,7 @@ An unknown frontmatter field is an error (`invalid-metadata-field`), never
 ignored. Malformed YAML, duplicate keys, YAML aliases, nesting beyond 32
 levels, and blocks over 64 KiB are all errors (`malformed-frontmatter`,
 `duplicate-frontmatter-key`). A document with *no* frontmatter block at all is
-legal (the legacy form). Timestamps are deliberately absent: recency is
+legal (the legacy form). The envelope carries no timestamp fields: recency is
 derived from version control, never stored in frontmatter.
 <!-- inv: frontmatter --> <!-- inv: limits -->
 
@@ -284,8 +283,9 @@ normative weight. <!-- inv: requirement_line_grammar -->
 > **Not specified.** The reference implementation also emits *advisory*
 > ISO/IEC/IEEE 29148 "singular requirement" and EARS response-clause findings
 > (`requirement-not-singular`, `requirement-non-ears`, `requirement-ears-clause`;
-> ADR-056). These are authoring heuristics, not conformance rules, and are
-> deliberately excluded — only the BCP-14 casing rule above is normative.
+> ADR-056). These are authoring heuristics rather than conformance rules and
+> are excluded from this specification. Only the BCP-14 casing rule above is
+> normative.
 
 ```markdown
 ## Requirements
@@ -303,10 +303,11 @@ They are documentation for implementers, derived from validator behavior — the
 reference implementation itself ships no JSON Schema and takes no
 schema-validation dependency, so these are not a `rac-core` artifact. Prose
 and schema are cross-checked against one extraction inventory; a disagreement
-is a defect in this specification (file an issue), not a license to pick one.
-Prose-only specs drift: OKF shipped prose-only and its own reference parser
-diverged from the text within days (it requires four frontmatter fields; the
-text requires one — see `conformance/conformance.md`).
+between them is a defect in this specification, to be resolved by issue
+rather than by following either side. Prose-only specs drift: OKF shipped
+prose-only and its own reference parser diverged from the text within days
+(it requires four frontmatter fields where the text requires one; see
+`conformance/conformance.md`).
 
 ## 7. The `status` lifecycle
 
@@ -371,12 +372,12 @@ at a retired target:
 
 OKF §5.3 states that the specific kind of relationship a link asserts
 "is conveyed by the surrounding prose, not by the link itself," and that
-consumers must tolerate broken links. RAC deliberately inverts both choices:
-relationship semantics are machine-readable, and broken links are blocking.
-Agents cannot be trusted to infer edge types from prose — that inference gap
-is precisely the failure RAC exists to close, for the links it recognizes
-(§8.2). A link whose meaning lives in prose is one an agent will misread; a
-declared link whose target silently dangles is a decision an agent never finds.
+consumers must tolerate broken links. RAC inverts both choices: relationship
+semantics are machine-readable, and broken links are blocking. An agent
+cannot be relied on to infer an edge type from prose, so for the links RAC
+recognizes (§8.2) the type is part of the declaration itself, and a
+reference that fails to resolve is a finding rather than tolerated
+ambiguity.
 
 ### 8.2 The vocabulary
 
@@ -406,10 +407,9 @@ enforced: a **recognized** edge populated on a type that does not declare it is
 **Recognition boundary.** Relationships are recognized *by name*, against this
 closed vocabulary. A heading outside it — `## Blocks`, `## Related Widgets` —
 is not a relationship: it carries no edge and no finding, like any prose
-section (§11). This is not a hole a stricter validator would close — a
-deterministic offline parser cannot tell an author's intended-but-unrecognized
-edge from ordinary prose — so RAC's strictness necessarily covers the edges it
-recognizes, not every relationship an author might imply. An unknown
+section (§11). A deterministic offline parser cannot distinguish an intended
+but unrecognized edge from ordinary prose, so validation covers the edges the
+vocabulary names, not every relationship an author might imply. An unknown
 relationship *kind* is rejectable only where the kind is an explicit key: the
 reserved frontmatter `relationships` map (§8.6), never a body heading.
 
@@ -615,21 +615,20 @@ differ: the gate decides whether a corpus state may land, the consumer
 decides how landed knowledge is presented, and only the first is
 policy-tunable.
 
-The inversion of OKF's permissiveness is deliberate. Descriptive knowledge
-degrades gracefully when stale — an agent reading a slightly outdated table
-description writes slightly worse queries — but prescriptive knowledge does
-not: an agent citing a superseded architecture decision re-introduces the
-exact mistake the team already paid to rule out. Guessing on an unknown value
-is worse than failing, because the output is indistinguishable from grounded
-knowledge.
+This inverts OKF's permissive consumption model because the two formats
+carry different kinds of knowledge. Stale descriptive knowledge degrades
+output quality gradually; stale prescriptive knowledge reverses a recorded
+decision outright. A consumer that guesses on an unknown value produces
+output that cannot be told apart from grounded knowledge, so failing is the
+safer behavior.
 
 ### 9.7 Conformance levels
 
 Conformance is always evaluated under the **default policy** (§9.5): local
 severity overrides and enforcement reclassifications change a repository's own
-gate verdict, never its spec conformance — which is what makes a conformance
-claim portable. A claim MUST name the policy it was evaluated under; an
-unqualified claim means the default policy.
+gate verdict, never its spec conformance. This keeps conformance claims
+comparable across repositories. A claim MUST name the policy it was evaluated
+under; an unqualified claim means the default policy.
 
 - **Conformant corpus** — under the default policy, structural validation
   (§9.3, `validate` source) yields zero blocking findings, and every
@@ -673,11 +672,11 @@ additional envelope versions; that mapping is part of the spec contract, so a
 consumer resolves envelope compatibility only after it has accepted the
 declared `rac_spec` (§10.3).
 
-The declaration lives in the corpus config, uniformly, no exceptions. OKF §11
-puts its `okf_version` declaration in the frontmatter of `index.md` — a file
-OKF otherwise defines as a generated, frontmatter-free entry point; that
-special case is exactly the kind of parser wart this specification refuses to
-copy.
+The declaration lives in the corpus config, uniformly, with no exceptions.
+OKF §11 puts its `okf_version` declaration in the frontmatter of `index.md`,
+a file OKF otherwise defines as frontmatter-free (§6); a single-file
+exception of that kind invites parser bugs, and this specification does not
+copy it.
 
 > **Implementation status.** This subsection is the one requirement in this
 > specification not yet enforced by the reference implementation: `rac-core`
@@ -702,19 +701,19 @@ copy.
 
 A consumer encountering a declared spec version newer than it supports MUST
 fail with a diagnostic naming both versions ("corpus targets 0.3, consumer
-supports 0.1"); it MUST NOT attempt best-effort interpretation. Contrast OKF
-§11, which pairs its version declaration with a SHOULD for best-effort
-consumption by consumers that do not understand the version — rendering the
-declaration nearly informational. RAC pairs the declaration with mandatory
-refusal, which makes it load-bearing. The field is not the differentiator;
-the failure semantics are.
+supports 0.1"); it MUST NOT attempt best-effort interpretation. OKF §11
+pairs its version declaration with a SHOULD for best-effort consumption by
+consumers that do not understand the version, so the declaration carries
+little weight there. RAC pairs the same kind of declaration with mandatory
+refusal. What separates the two formats is the failure behavior, not the
+field.
 
 The rationale is diagnosability: strict unknown-value handling (§9.6) is only
 actionable if a consumer can distinguish a corrupt corpus from one targeting a
-newer spec — which is why strict ecosystems pair failure with a version field
-(JSON Schema's `$schema`, OpenAPI's version). Accordingly, an unknown-enum
-error MUST include the declared spec version, so it reads "corpus targets 0.3,
-consumer supports 0.1," never an opaque rejection.
+newer spec. Strict ecosystems pair failure with a version field for this
+reason (JSON Schema's `$schema`, OpenAPI's version). Accordingly, an
+unknown-enum error MUST include the declared spec version, so it reads
+"corpus targets 0.3, consumer supports 0.1" rather than an opaque rejection.
 
 ## 11. Extension points
 

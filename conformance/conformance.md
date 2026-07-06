@@ -56,7 +56,7 @@ A tool that reads, validates, or serves a corpus. It MUST:
   aliases — never by file path;
 - report all findings and fail on any blocking finding (tier 1–2);
 - refuse to present a retired artifact as current knowledge;
-- fail — not guess — on any enum value outside its known vocabulary, and on
+- fail, rather than guess, on any enum value outside its known vocabulary, and on
   any corpus declaring a spec version newer than it supports, naming both
   versions in the diagnostic;
 - preserve producer-defined content it round-trips (frontmatter
