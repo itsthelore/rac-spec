@@ -20,8 +20,8 @@ normative statement below is traceable to behavior the reference validator
 enforces today (the machine-checked trace lives in `extraction-inventory.json`;
 one deliberate exception is called out in §10). The specification is pre-1.0:
 expect breaking changes before v1.0, governed by the compatibility policy in
-§10. The specification versions independently of `rac-core`, which releases on
-CalVer.
+§10. The specification versions independently, decoupled from `rac-core`'s
+release versioning.
 
 ## 3. Motivation, goals, and non-goals
 
@@ -111,7 +111,10 @@ mechanical and one-directional:
    (`okf-unmapped-type`), never a silent omission. <!-- inv: okf_composition -->
 2. RAC's other envelope keys (`schema_version`, `id`, `relationships`, `tags`)
    ride as OKF producer-defined keys, which OKF consumers are directed to
-   preserve and not reject (OKF §9), so the export is lossless.
+   preserve and not reject (OKF §9), so the export is lossless. RAC does not
+   project a frontmatter `title` or `description` — OKF derives `title` from
+   the H1 (§6.2), and both are OKF-optional; `conformance/conformance.md`
+   records the parser-compatibility caveat this raises.
 3. RAC identity is the explicit `id` field, not the file path (§6.4): a
    RAC-aware consumer MUST resolve links by identifier. OKF's path-as-identity
    does not survive a file rename; RAC's does.
@@ -209,13 +212,12 @@ offline and branch-safe (an 8-character millisecond-timestamp segment plus a
 4-character random segment); no allocation server exists or is permitted.
 
 **Identity resolution precedence** (first match wins): the frontmatter `id`;
-an explicit `## ID` section value; a `<letters>-<digits>` prefix of the
-filename stem (e.g. `adr-004` from `adr-004-parser-strategy.md`); the whole
-filename stem. An artifact answers to *all* of these as resolution aliases, so
-human-readable references (`ADR-004`) keep resolving after an artifact adopts
-a canonical ID. The document title is never an identifier, and inline
-`[REQ-NNN]` requirement lines are not identifiers — link targets are whole
-artifacts. <!-- inv: id_rules -->
+an explicit `## ID` section value; a `<letters>-<digits>` filename-stem prefix
+(e.g. `adr-004` from `adr-004-parser-strategy.md`); the whole filename stem. An
+artifact answers to *all* of these as resolution aliases, so human-readable
+references (`ADR-004`) keep resolving after it adopts a canonical ID. The
+document title is never an identifier, and inline `[REQ-NNN]` lines are not
+identifiers — link targets are whole artifacts. <!-- inv: id_rules -->
 
 Three normative consequences:
 
@@ -370,9 +372,9 @@ OKF §5.3 states that the specific kind of relationship a link asserts
 consumers must tolerate broken links. RAC deliberately inverts both choices:
 relationship semantics are machine-readable, and broken links are blocking.
 Agents cannot be trusted to infer edge types from prose — that inference gap
-is precisely the failure RAC exists to close. A link whose meaning lives in
-prose is a link an agent will misread; a link whose target silently dangles is
-a decision an agent will never find.
+is precisely the failure RAC exists to close, for the links it recognizes
+(§8.2). A link whose meaning lives in prose is one an agent will misread; a
+declared link whose target silently dangles is a decision an agent never finds.
 
 ### 8.2 The vocabulary
 
@@ -396,8 +398,18 @@ stripped; otherwise the line text *is* the reference, preserved verbatim.
 Section headings map to edge names by lowercasing and replacing spaces with
 underscores (`## Related Decisions` → `related_decisions`). Cardinality is
 many-valued for every edge. Edge legality by source type ("declared by") is
-enforced: a vocabulary section populated on a type that does not declare it is
+enforced: a **recognized** edge populated on a type that does not declare it is
 `relationship-edge-unsupported` and produces no edge. <!-- inv: relationship_types -->
+
+**Recognition boundary.** Relationships are recognized *by name*, against this
+closed vocabulary. A heading outside it — `## Blocks`, `## Related Widgets` —
+is not a relationship: it carries no edge and no finding, like any prose
+section (§11). This is not a hole a stricter validator would close — a
+deterministic offline parser cannot tell an author's intended-but-unrecognized
+edge from ordinary prose — so RAC's strictness necessarily covers the edges it
+recognizes, not every relationship an author might imply. An unknown
+relationship *kind* is rejectable only where the kind is an explicit key: the
+reserved frontmatter `relationships` map (§8.6), never a body heading.
 
 ```markdown
 ## Related Decisions
@@ -579,8 +591,11 @@ MUST reject (refuse to treat as a valid corpus):
 
 1. any tier 1 or tier 2 finding — equivalently, any blocking finding under the
    corpus's committed policy;
-2. any unknown `status` value, and any populated relationship section whose
-   edge is outside the declaring type's vocabulary — fail, do not guess;
+2. any unknown `status` value; and any populated relationship section that
+   uses a *recognized* edge name on a type that does not declare it
+   (`relationship-edge-unsupported`) — fail, do not guess. (A heading outside
+   the vocabulary is prose, not a relationship (§8.2), and is out of scope
+   here.)
 3. any reference from a live artifact to a retired artifact presented as
    current (outside `supersedes`);
 4. any corpus declaring a spec version newer than the consumer supports
@@ -588,12 +603,12 @@ MUST reject (refuse to treat as a valid corpus):
    set.
 
 The inversion of OKF's permissiveness is deliberate. Descriptive knowledge
-degrades gracefully when stale: an agent reading a slightly outdated table
-description writes slightly worse queries. Prescriptive knowledge does not:
-an agent citing a superseded architecture decision re-introduces the exact
-mistake the team already paid to rule out. A consumer that guesses on an
-unknown enum value is worse than one that fails: its output is
-indistinguishable from grounded knowledge.
+degrades gracefully when stale — an agent reading a slightly outdated table
+description writes slightly worse queries — but prescriptive knowledge does
+not: an agent citing a superseded architecture decision re-introduces the
+exact mistake the team already paid to rule out. Guessing on an unknown value
+is worse than failing, because the output is indistinguishable from grounded
+knowledge.
 
 ### 9.7 Conformance levels
 
@@ -651,14 +666,13 @@ OKF otherwise defines as a generated, frontmatter-free entry point; that
 special case is exactly the kind of parser wart this specification refuses to
 copy.
 
-> **Implementation status.** This subsection is the one deliberate
-> forward-looking addition in this specification. At ratification the
-> maintainer committed `rac-core` to implementing it — reading `rac_spec`,
-> refusing newer-versioned corpora per §10.3, and declaring the key in its
-> own corpus — before v0.1.0 is announced; the MUST stands on that basis.
-> Until that lands, the reference implementation ignores the key (which is
-> harmless: unknown corpus-config keys are not errors), and this note is the
-> record of the gap.
+> **Implementation status.** This subsection is the one requirement in this
+> specification not yet enforced by the reference implementation: `rac-core`
+> does not currently read `rac_spec` or refuse newer-versioned corpora
+> (§10.3). An unknown corpus-config key is a harmless no-op, so declaring
+> `rac_spec` today breaks nothing. A conformant implementation MUST implement
+> both; the reference implementation's progress toward it is tracked in its
+> CHANGELOG, not here.
 
 ### 10.2 What may change when
 
