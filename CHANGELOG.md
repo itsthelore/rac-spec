@@ -6,6 +6,13 @@ versioning; the compatibility rules are in SPEC.md §10.2.
 
 ## Unreleased
 
+- **conformance/output-parity.json**, **conformance/vectors/** — the
+  output-parity conformance tier (rac-core ADR-063 Guard 2): eleven cases,
+  each pinning the byte-for-byte stdout (with sha256) and exit code of a
+  deterministic, recency-free command over the example corpora. The goldens
+  are the reference implementation's exact output; an implementation claiming
+  this tier must reproduce every case exactly. Optional tier; producer/
+  consumer conformance is unchanged.
 - **schema/artifact-specs.json** — the canonical machine-readable
   artifact-spec registry (ordered artifact specs with section tiers, metadata
   enums, descriptions, guidance, synonyms, and starter bodies, plus

@@ -1,0 +1,136 @@
+{
+  "_meta": {
+    "purpose": "Output-parity conformance tier (rac-core ADR-063 Guard 2): each case pins the byte-for-byte stdout and exit code an engine must produce for a deterministic, recency-free command run from this repository's root over an example corpus. An engine conforms to this tier when it reproduces every case exactly.",
+    "environment": {
+      "RAC_NO_CACHE": "1",
+      "LC_ALL": "C",
+      "TZ": "UTC",
+      "COLUMNS": "80"
+    },
+    "cwd": "the rac-spec repository root",
+    "arbiter": "The golden stdout bytes are the reference implementation's (rac-core) exact output. Where this tier and an implementation disagree, rac-core is the arbiter; where this tier and rac-core disagree, that is a spec defect — file an issue."
+  },
+  "cases": [
+    {
+      "id": "validate-minimal-corpus",
+      "argv": [
+        "validate",
+        "examples/minimal-corpus",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/validate-minimal-corpus.stdout",
+      "stdout_sha256": "0a7c30f237afa170051d4e907be9e7c6507115f6c46bbcdbf8f809dc72cd906a"
+    },
+    {
+      "id": "validate-valid",
+      "argv": [
+        "validate",
+        "examples/valid",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/validate-valid.stdout",
+      "stdout_sha256": "e0e4f3d84a1cc0d849e60df534b778057c46323a6496c9ef66d222c365aa1e44"
+    },
+    {
+      "id": "inspect-minimal-corpus",
+      "argv": [
+        "inspect",
+        "examples/minimal-corpus",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/inspect-minimal-corpus.stdout",
+      "stdout_sha256": "b09caadbb6d7c70285e46ee7ec3d020041b1cf25faaefd727d4020086728dc4d"
+    },
+    {
+      "id": "inspect-valid",
+      "argv": [
+        "inspect",
+        "examples/valid",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/inspect-valid.stdout",
+      "stdout_sha256": "bc6e9cb07cb71f3d35637db3a4e6a7007f8fe538775adb0d682048a6f05dbe0a"
+    },
+    {
+      "id": "relationships-minimal-corpus",
+      "argv": [
+        "relationships",
+        "examples/minimal-corpus",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/relationships-minimal-corpus.stdout",
+      "stdout_sha256": "8a046462091ba7621fbe6a271c0ed3991099eb91dc0105313bdec631de32b521"
+    },
+    {
+      "id": "relationships-valid",
+      "argv": [
+        "relationships",
+        "examples/valid",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/relationships-valid.stdout",
+      "stdout_sha256": "3d594fc3308e9d0e2064d6ee0e267230a6bbae9b783c30f909d77735bf95a485"
+    },
+    {
+      "id": "stats-minimal-corpus",
+      "argv": [
+        "stats",
+        "examples/minimal-corpus",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/stats-minimal-corpus.stdout",
+      "stdout_sha256": "f4aa3285cc467cc4bb8d5403b51e0ec901ced2dab9cbfef21f25b275c63ab37b"
+    },
+    {
+      "id": "stats-valid",
+      "argv": [
+        "stats",
+        "examples/valid",
+        "--json"
+      ],
+      "expect_exit": 0,
+      "stdout": "conformance/vectors/stats-valid.stdout",
+      "stdout_sha256": "44596f05ef7ea77d8a142aa8328e9a6c1c188bd96ecf2dd2dded10e619c13496"
+    },
+    {
+      "id": "validate-invalid-missing-required-section",
+      "argv": [
+        "validate",
+        "examples/invalid/missing-required-section.md",
+        "--json"
+      ],
+      "expect_exit": 1,
+      "stdout": "conformance/vectors/validate-invalid-missing-required-section.stdout",
+      "stdout_sha256": "82e01a7d1dcc2eaf840fdf1c71ba6bd6178c9bb7d577f6e3f24e9ea1bbe7d8db"
+    },
+    {
+      "id": "validate-invalid-status",
+      "argv": [
+        "validate",
+        "examples/invalid/invalid-status.md",
+        "--json"
+      ],
+      "expect_exit": 1,
+      "stdout": "conformance/vectors/validate-invalid-status.stdout",
+      "stdout_sha256": "415c35fcf7d1940498dfb8378521d9204d8b801621c5d4f0749aa5ef53929c31"
+    },
+    {
+      "id": "validate-invalid-duplicate-req-id",
+      "argv": [
+        "validate",
+        "examples/invalid/duplicate-req-id.md",
+        "--json"
+      ],
+      "expect_exit": 1,
+      "stdout": "conformance/vectors/validate-invalid-duplicate-req-id.stdout",
+      "stdout_sha256": "7bf5fc23abecc026a309db30fb4f82973b02fcd0108e3ae271a4843c16fafbc8"
+    }
+  ]
+}

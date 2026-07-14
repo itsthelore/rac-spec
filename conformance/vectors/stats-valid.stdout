@@ -1,0 +1,55 @@
+{
+  "directory": "examples/valid",
+  "empty": false,
+  "features": 1,
+  "valid_features": 1,
+  "invalid_features": 0,
+  "requirements": 2,
+  "metrics": 1,
+  "risks": 1,
+  "features_missing_metrics": 0,
+  "features_missing_risks": 0,
+  "missing_metrics": [],
+  "missing_risks": [],
+  "average_requirements_per_feature": 2.0,
+  "largest_feature": {
+    "name": "Offline validation",
+    "requirements": 2
+  },
+  "requirements_by_feature": [
+    {
+      "name": "Offline validation",
+      "requirements": 2
+    }
+  ],
+  "invalid": [],
+  "decisions": {
+    "count": 1,
+    "by_status": {
+      "Accepted": 1
+    },
+    "by_category": {
+      "Architecture": 1
+    }
+  },
+  "roadmaps": {
+    "count": 1,
+    "valid": 1,
+    "invalid": []
+  },
+  "prompts": {
+    "count": 1,
+    "valid": 1,
+    "invalid": []
+  },
+  "designs": {
+    "count": 1,
+    "valid": 1,
+    "invalid": []
+  },
+  "relationships": {
+    "related_requirements": 2,
+    "related_decisions": 2,
+    "related_roadmaps": 1
+  }
+}

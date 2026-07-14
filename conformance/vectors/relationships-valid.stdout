@@ -1,0 +1,59 @@
+{
+  "directory": "examples/valid",
+  "recursive": true,
+  "total_files": 5,
+  "artifacts_with_relationships": 5,
+  "relationship_count": 5,
+  "counts": {
+    "related_requirements": 2,
+    "related_decisions": 2,
+    "related_roadmaps": 1
+  },
+  "artifacts": [
+    {
+      "path": "examples/valid/decision.md",
+      "type": "decision",
+      "relationships": {
+        "related_requirements": [
+          "EX-0000000000R1"
+        ]
+      }
+    },
+    {
+      "path": "examples/valid/design.md",
+      "type": "design",
+      "relationships": {
+        "related_requirements": [
+          "EX-0000000000R1"
+        ]
+      }
+    },
+    {
+      "path": "examples/valid/prompt.md",
+      "type": "prompt",
+      "relationships": {
+        "related_roadmaps": [
+          "EX-0000000000M1"
+        ]
+      }
+    },
+    {
+      "path": "examples/valid/requirement.md",
+      "type": "requirement",
+      "relationships": {
+        "related_decisions": [
+          "EX-0000000000D1"
+        ]
+      }
+    },
+    {
+      "path": "examples/valid/roadmap.md",
+      "type": "roadmap",
+      "relationships": {
+        "related_decisions": [
+          "EX-0000000000D1"
+        ]
+      }
+    }
+  ]
+}

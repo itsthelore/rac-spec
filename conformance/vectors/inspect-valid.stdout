@@ -1,0 +1,44 @@
+{
+  "schema_version": "1",
+  "directory": "examples/valid",
+  "recursive": true,
+  "summary": {
+    "total_files": 5,
+    "counts": {
+      "requirement": 1,
+      "decision": 1,
+      "roadmap": 1,
+      "prompt": 1,
+      "design": 1,
+      "unknown": 0
+    },
+    "unknown": 0
+  },
+  "files": [
+    {
+      "path": "examples/valid/decision.md",
+      "type": "decision",
+      "confidence": 1.0
+    },
+    {
+      "path": "examples/valid/design.md",
+      "type": "design",
+      "confidence": 0.69
+    },
+    {
+      "path": "examples/valid/prompt.md",
+      "type": "prompt",
+      "confidence": 0.82
+    },
+    {
+      "path": "examples/valid/requirement.md",
+      "type": "requirement",
+      "confidence": 1.0
+    },
+    {
+      "path": "examples/valid/roadmap.md",
+      "type": "roadmap",
+      "confidence": 1.0
+    }
+  ]
+}

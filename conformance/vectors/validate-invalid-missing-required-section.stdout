@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "file": "examples/invalid/missing-required-section.md",
+  "valid": false,
+  "errors": [
+    {
+      "severity": "error",
+      "code": "missing-consequences",
+      "message": "Decision is missing a ## Consequences section.",
+      "line": null
+    }
+  ],
+  "warnings": []
+}

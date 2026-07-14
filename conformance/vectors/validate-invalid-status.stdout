@@ -1,0 +1,14 @@
+{
+  "schema_version": "1",
+  "file": "examples/invalid/invalid-status.md",
+  "valid": false,
+  "errors": [
+    {
+      "severity": "error",
+      "code": "invalid-decision-status",
+      "message": "## Status value 'Retired' is not one of: Proposed, Accepted, Superseded, Deprecated.",
+      "line": null
+    }
+  ],
+  "warnings": []
+}

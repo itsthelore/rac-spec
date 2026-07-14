@@ -1,0 +1,27 @@
+{
+  "schema_version": "1",
+  "file": "examples/invalid/duplicate-req-id.md",
+  "valid": false,
+  "errors": [
+    {
+      "severity": "error",
+      "code": "duplicate-req-id",
+      "message": "Duplicate requirement ID REQ-001 (used 2 times).",
+      "line": 16
+    }
+  ],
+  "warnings": [
+    {
+      "severity": "warning",
+      "code": "missing-success-metrics",
+      "message": "No ## Success Metrics section (optional, but recommended).",
+      "line": null
+    },
+    {
+      "severity": "warning",
+      "code": "missing-risks",
+      "message": "No ## Risks section (optional, but recommended).",
+      "line": null
+    }
+  ]
+}

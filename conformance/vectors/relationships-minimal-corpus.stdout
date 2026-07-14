@@ -1,0 +1,31 @@
+{
+  "directory": "examples/minimal-corpus",
+  "recursive": true,
+  "total_files": 2,
+  "artifacts_with_relationships": 2,
+  "relationship_count": 2,
+  "counts": {
+    "related_requirements": 1,
+    "related_decisions": 1
+  },
+  "artifacts": [
+    {
+      "path": "examples/minimal-corpus/decision-capture.md",
+      "type": "requirement",
+      "relationships": {
+        "related_decisions": [
+          "MIN-01JYX0000001"
+        ]
+      }
+    },
+    {
+      "path": "examples/minimal-corpus/record-decisions-as-adrs.md",
+      "type": "decision",
+      "relationships": {
+        "related_requirements": [
+          "MIN-01JYX0000002"
+        ]
+      }
+    }
+  ]
+}

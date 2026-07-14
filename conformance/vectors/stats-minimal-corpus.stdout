@@ -1,0 +1,37 @@
+{
+  "directory": "examples/minimal-corpus",
+  "empty": false,
+  "features": 1,
+  "valid_features": 1,
+  "invalid_features": 0,
+  "requirements": 1,
+  "metrics": 1,
+  "risks": 1,
+  "features_missing_metrics": 0,
+  "features_missing_risks": 0,
+  "missing_metrics": [],
+  "missing_risks": [],
+  "average_requirements_per_feature": 1.0,
+  "largest_feature": {
+    "name": "Decision capture",
+    "requirements": 1
+  },
+  "requirements_by_feature": [
+    {
+      "name": "Decision capture",
+      "requirements": 1
+    }
+  ],
+  "invalid": [],
+  "decisions": {
+    "count": 1,
+    "by_status": {
+      "Accepted": 1
+    },
+    "by_category": {}
+  },
+  "relationships": {
+    "related_requirements": 1,
+    "related_decisions": 1
+  }
+}
