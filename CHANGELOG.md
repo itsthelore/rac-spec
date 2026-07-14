@@ -4,6 +4,17 @@ Changes to the RAC (Requirements as Code) specification, by version. The
 specification versions independently of any implementation, on semantic
 versioning; the compatibility rules are in SPEC.md §10.2.
 
+## Unreleased
+
+- **schema/artifact-specs.json** — the canonical machine-readable
+  artifact-spec registry (ordered artifact specs with section tiers, metadata
+  enums, descriptions, guidance, synonyms, and starter bodies, plus
+  relationship-section descriptions). This file is a source of truth engines
+  read, not derived documentation: the reference implementation vendors it
+  and both of its engines load their specs from the vendored copy, with a
+  sync gate holding the copies identical (rac-core ADR-115, ADR-063 Guard 1).
+  Additive; no normative statement in SPEC.md changes.
+
 ## v0.1.0 — 2026-07-05
 
 Initial extraction of the specification from the reference implementation,

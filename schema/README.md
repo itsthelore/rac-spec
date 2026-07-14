@@ -1,5 +1,21 @@
 # Schemas
 
+## The shared registry engines read
+
+**`artifact-specs.json`** is the canonical machine-readable artifact-spec
+registry: the ordered artifact specs (requirement, decision, roadmap, prompt,
+design) with their section tiers, metadata enums, descriptions, guidance,
+synonyms, and starter bodies, plus the relationship-section descriptions.
+Unlike the JSON Schemas below, it is not derived documentation — it is a
+source of truth an engine reads directly. The reference implementation
+([`rac-core`](https://github.com/itsthelore/rac-core)) vendors it and both of
+its engines (Python and Rust) load their artifact specs from the vendored
+copy; a sync gate keeps that copy identical to this file (rac-core ADR-115,
+closing ADR-063 Guard 1). Changes to it are normative and follow the process
+in [CONTRIBUTING.md](../CONTRIBUTING.md).
+
+## The JSON Schemas
+
 These JSON Schemas pin the **single-document structural layer** of RAC
 (Requirements as Code) — and only that layer. They are the machine-readable
 form of [SPEC.md](../SPEC.md) §6.3–§6.7:
