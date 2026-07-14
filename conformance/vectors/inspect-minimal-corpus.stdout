@@ -1,0 +1,29 @@
+{
+  "schema_version": "1",
+  "directory": "examples/minimal-corpus",
+  "recursive": true,
+  "summary": {
+    "total_files": 2,
+    "counts": {
+      "requirement": 1,
+      "decision": 1,
+      "roadmap": 0,
+      "prompt": 0,
+      "design": 0,
+      "unknown": 0
+    },
+    "unknown": 0
+  },
+  "files": [
+    {
+      "path": "examples/minimal-corpus/decision-capture.md",
+      "type": "requirement",
+      "confidence": 0.86
+    },
+    {
+      "path": "examples/minimal-corpus/record-decisions-as-adrs.md",
+      "type": "decision",
+      "confidence": 0.78
+    }
+  ]
+}

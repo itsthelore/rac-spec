@@ -82,6 +82,22 @@ and an implementation disagree — and where this repository and `rac-core`
 disagree, that is a spec defect: file an issue rather than silently following
 either.
 
+### Output-parity tier
+
+[`output-parity.json`](output-parity.json) defines a stricter, optional tier
+for implementations that claim byte-for-byte output parity with the reference
+implementation (the bar rac-core ADR-063 Guard 2 sets for a native engine
+port). Each case pins an argv, an expected exit code, and a golden stdout
+file in [`vectors/`](vectors/) with its sha256 — deterministic, recency-free
+commands (`validate`, `inspect`, `relationships`, `stats`, all `--json`) run
+from this repository's root over the example corpora, plus `validate --json`
+on three invalid cases. The goldens are the arbiter's exact output. An
+implementation conforms to this tier when, under the manifest's pinned
+environment, it reproduces every case's stdout bytes and exit code exactly.
+This tier is not required for producer/consumer conformance above; it exists
+so a reimplementation can prove it is indistinguishable from the reference,
+not merely conformant.
+
 ## Compatibility note: OKF consumers
 
 SPEC.md §5 claims a RAC corpus exports to a conformant OKF v0.1 bundle. When

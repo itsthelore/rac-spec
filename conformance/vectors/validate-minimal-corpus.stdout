@@ -1,0 +1,32 @@
+{
+  "schema_version": "1",
+  "directory": "examples/minimal-corpus",
+  "recursive": true,
+  "summary": {
+    "total_files": 2,
+    "checked": 2,
+    "valid": 2,
+    "invalid": 0,
+    "skipped_unknown": 0
+  },
+  "valid": true,
+  "files": [
+    {
+      "path": "examples/minimal-corpus/decision-capture.md",
+      "artifact_type": "requirement",
+      "status": "valid",
+      "issues": []
+    },
+    {
+      "path": "examples/minimal-corpus/record-decisions-as-adrs.md",
+      "artifact_type": "decision",
+      "status": "valid",
+      "issues": []
+    }
+  ],
+  "okf": {
+    "conformant": true,
+    "artifacts_checked": 2,
+    "findings": []
+  }
+}

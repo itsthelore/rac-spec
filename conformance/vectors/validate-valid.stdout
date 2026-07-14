@@ -1,0 +1,50 @@
+{
+  "schema_version": "1",
+  "directory": "examples/valid",
+  "recursive": true,
+  "summary": {
+    "total_files": 5,
+    "checked": 5,
+    "valid": 5,
+    "invalid": 0,
+    "skipped_unknown": 0
+  },
+  "valid": true,
+  "files": [
+    {
+      "path": "examples/valid/decision.md",
+      "artifact_type": "decision",
+      "status": "valid",
+      "issues": []
+    },
+    {
+      "path": "examples/valid/design.md",
+      "artifact_type": "design",
+      "status": "valid",
+      "issues": []
+    },
+    {
+      "path": "examples/valid/prompt.md",
+      "artifact_type": "prompt",
+      "status": "valid",
+      "issues": []
+    },
+    {
+      "path": "examples/valid/requirement.md",
+      "artifact_type": "requirement",
+      "status": "valid",
+      "issues": []
+    },
+    {
+      "path": "examples/valid/roadmap.md",
+      "artifact_type": "roadmap",
+      "status": "valid",
+      "issues": []
+    }
+  ],
+  "okf": {
+    "conformant": true,
+    "artifacts_checked": 5,
+    "findings": []
+  }
+}
